@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#fbf8ff;color:#1a1b22;font-family:'Plus Jakarta Sans',sans-serif;-webkit-tap-highlight-color:transparent;}body{overscroll-behavior-y:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-error-container":"#93000a","primary-fixed":"#7ffc97","secondary":"#565e74","on-background":"#1a1b22","tertiary-fixed-dim":"#ffb77d","on-tertiary-container":"#fffbff","on-secondary-container":"#5c647a","on-tertiary-fixed":"#2f1500","on-tertiary":"#ffffff","surface-bright":"#fbf8ff","surface-container-high":"#e8e7f1","primary-fixed-dim":"#62df7d","tertiary-container":"#b15f00","on-primary":"#ffffff","surface-container":"#eeedf7","inverse-on-surface":"#f1effa","surface-container-highest":"#e3e1ec","on-secondary":"#ffffff","on-surface-variant":"#3e4a3d","inverse-surface":"#2f3038","surface-tint":"#006e2d","on-primary-fixed-variant":"#005320","on-tertiary-fixed-variant":"#6e3900","surface-container-low":"#f4f2fd","tertiary-fixed":"#ffdcc3","primary":"#006b2c","on-surface":"#1a1b22","inverse-primary":"#62df7d","primary-container":"#00873a","error":"#ba1a1a","on-secondary-fixed-variant":"#3f465c","surface-variant":"#e3e1ec","surface":"#fbf8ff","tertiary":"#8d4b00","error-container":"#ffdad6","on-error":"#ffffff","on-secondary-fixed":"#131b2e","outline":"#6e7b6c","surface-dim":"#dad9e3","secondary-container":"#dae2fd","secondary-fixed-dim":"#bec6e0","on-primary-container":"#f7fff2","outline-variant":"#bdcaba","surface-container-lowest":"#ffffff","background":"#fbf8ff","on-primary-fixed":"#002109","secondary-fixed":"#dae2fd"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"space-lg":"1rem","margin-mobile":"1rem",gutter:"1rem","space-md":"0.75rem","space-xs":"0.25rem",margin:"1.5rem","gutter-mobile":"0.75rem","space-xl":"1.5rem","space-sm":"0.5rem"},fontFamily:{"body-md":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],display:["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"currency-stat":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"]},fontSize:{"body-md":["14px",{lineHeight:"20px",fontWeight:"400"}],"headline-md":["20px",{lineHeight:"28px",fontWeight:"600"}],"headline-lg":["28px",{lineHeight:"36px",letterSpacing:"-0.01em",fontWeight:"700"}],"body-lg":["16px",{lineHeight:"24px",fontWeight:"400"}],display:["36px",{lineHeight:"44px",letterSpacing:"-0.02em",fontWeight:"700"}],"headline-sm":["18px",{lineHeight:"24px",fontWeight:"600"}],"headline-lg-mobile":["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"700"}],"currency-stat":["32px",{lineHeight:"38px",letterSpacing:"-0.03em",fontWeight:"800"}],"body-sm":["12px",{lineHeight:"16px",fontWeight:"400"}],"label-md":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"600"}],"label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.02em",fontWeight:"500"}],"label-lg":["14px",{lineHeight:"20px",letterSpacing:"0.01em",fontWeight:"600"}]}}}};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-20 flex flex-col justify-between px-margin-mobile py-space-xs"><div class="flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs min-w-0"><button aria-label="Kembali ke Keuangan" class="w-11 h-11 -ml-1 rounded-lg flex items-center justify-center text-on-surface hover:bg-surface-container active:scale-95 transition-all shrink-0" onclick="window.history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><div class="flex flex-col min-w-0"><span class="text-label-md font-label-md text-on-surface-variant leading-none tracking-tight">Keuangan • Detail</span><span class="text-headline-sm font-headline-sm text-on-surface font-bold truncate leading-snug">Laporan Keuangan</span></div></div><div class="flex items-center gap-space-sm shrink-0"><button aria-label="Sinkronkan Data Offline" class="min-h-[44px] px-space-sm py-space-xs rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 flex items-center gap-space-xs text-on-surface transition-all" type="button"><span class="material-symbols-outlined text-primary text-[18px]">sync</span><span class="text-label-sm font-label-sm font-semibold">Sinkron</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div><div class="flex items-center justify-between px-space-xs py-[2px] bg-surface-container-low rounded-DEFAULT"><div class="flex items-center gap-space-xs overflow-hidden"><span class="w-2 h-2 rounded-full bg-tertiary-container animate-pulse shrink-0"></span><span class="text-label-sm font-label-sm text-on-surface-variant truncate">Mode Offline • Tersimpan di HP</span></div><span class="text-label-sm font-label-sm text-outline shrink-0 ml-space-xs">Laporan Siap</span></div></div></header><main class="flex flex-col relative w-full pt-20 pb-24 px-margin-mobile bg-surface max-w-[480px] mx-auto min-h-screen"><div class="flex flex-col w-full gap-space-md">
+<!-- Sub-header context & filter badge -->
+<div class="flex items-center justify-between px-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+<span class="text-label-lg font-label-lg text-on-surface">1 – 18 September 2026</span>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-[3px] rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="text-label-sm font-label-sm text-on-surface-variant font-medium">18 Hari Terpilih</span>
+</div>
+</div>
+<!-- Financial Performance Card (Net Cash Change) -->
+<div class="flex flex-col bg-primary text-on-primary rounded-xl p-space-md shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="text-label-md font-label-md text-on-primary-container tracking-wider uppercase opacity-90">Perubahan Kas Bersih</span>
+<span class="inline-flex items-center gap-1 text-label-sm font-label-sm bg-primary-container text-on-primary-container px-space-sm py-0.5 rounded-full font-semibold">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+        Surplus Operasional Bersih
+      </span>
+</div>
+<div class="text-currency-stat font-currency-stat text-on-primary tracking-tight my-space-xs">
+      Rp2.830.000
+    </div>
+<p class="text-body-sm font-body-sm text-on-primary-container opacity-85 leading-tight">
+      Total Pendapatan (Rp3.850.000) dikurangi Total Pengeluaran (Rp1.020.000)
+    </p>
+<!-- Two Equal Summary Columns -->
+<div class="grid grid-cols-2 gap-space-sm mt-space-md pt-space-md bg-on-primary/10 -mx-space-md -mb-space-md px-space-md pb-space-md rounded-b-xl">
+<div class="flex flex-col">
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-on-primary-container opacity-90">
+<span class="material-symbols-outlined text-[15px]">arrow_downward</span>
+          Pendapatan Kotor
+        </div>
+<span class="text-headline-sm font-headline-sm text-on-primary font-bold mt-0.5">Rp3.850.000</span>
+<span class="text-label-sm font-label-sm text-on-primary-container opacity-80">18 hari narik</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-on-primary-container opacity-90">
+<span class="material-symbols-outlined text-[15px]">arrow_upward</span>
+          Total Pengeluaran
+        </div>
+<span class="text-headline-sm font-headline-sm text-on-primary font-bold mt-0.5">Rp1.020.000</span>
+<span class="text-label-sm font-label-sm text-on-primary-container opacity-80">4 pos terdata</span>
+</div>
+</div>
+</div>
+<!-- Working Days & Daily Average (Critical Requirement & Anti-Bias Notice) -->
+<div class="flex flex-col bg-surface-container-lowest rounded-xl p-space-md shadow-sm gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">speed</span>
+</div>
+<span class="text-headline-sm font-headline-sm text-on-surface">Hari Narik &amp; Rata-rata Riil</span>
+</div>
+<span class="text-label-sm font-label-sm bg-surface-container px-2 py-0.5 rounded text-on-surface-variant font-semibold">18 Hari</span>
+</div>
+<!-- Metric split panel -->
+<div class="flex flex-col bg-surface-container-low rounded-lg p-space-md">
+<div class="flex items-baseline justify-between">
+<span class="text-body-md font-body-md text-on-surface-variant">Rata-rata Pendapatan Harian</span>
+<span class="text-headline-md font-headline-md text-primary font-bold">Rp213.889<span class="text-label-md font-label-md text-on-surface-variant font-normal"> / hari</span></span>
+</div>
+<div class="flex items-center gap-1 mt-1 text-label-sm font-label-sm text-outline">
+<span class="material-symbols-outlined text-[13px]">calculate</span>
+<span>Rp3.850.000 ÷ 18 hari narik</span>
+</div>
+</div>
+<!-- Anti-Bias Disclaimer Notice Box -->
+<div class="flex gap-space-sm bg-tertiary-fixed/30 p-space-sm rounded-lg">
+<span class="material-symbols-outlined text-tertiary text-[20px] shrink-0 mt-0.5">info</span>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="inline-flex items-center">
+<span class="text-label-sm font-label-sm text-tertiary font-bold tracking-tight">Rata-rata Historis Riil • Bukan Patokan Target</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant leading-snug">
+          Catatan: Rata-rata pendapatan adalah hasil pencapaian riil masa lalu (faktual), <strong class="text-on-surface font-semibold">BUKAN target harian Anda</strong>. Target narik harian dihitung tersendiri berdasarkan sisa hari dan target bulanan di menu Target.
+        </p>
+</div>
+</div>
+</div>
+<!-- Operational Financial Ratios -->
+<div class="flex flex-col bg-surface-container-lowest rounded-xl p-space-md shadow-sm gap-space-md">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">donut_small</span>
+<span class="text-headline-sm font-headline-sm text-on-surface">Rasio Finansial</span>
+</div>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Indikator efisiensi narik &amp; beban biaya operasional</span>
+</div>
+<!-- Ratio Card 1: Rasio Pengeluaran -->
+<div class="flex flex-col bg-surface-container-low rounded-lg p-space-md gap-space-xs">
+<div class="flex items-start justify-between">
+<div class="flex flex-col min-w-0">
+<span class="text-label-lg font-label-lg text-on-surface font-semibold">Rasio Pengeluaran Total</span>
+<span class="text-label-sm font-label-sm text-outline">Rp1.020.000 ÷ Rp3.850.000 × 100%</span>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<span class="text-headline-md font-headline-md text-on-surface font-bold">26,5%</span>
+<span class="text-label-sm font-label-sm text-primary font-semibold bg-primary-fixed/40 px-1.5 py-0.5 rounded mt-0.5">
+            Kondisi Sehat (&lt; 30%)
+          </span>
+</div>
+</div>
+<!-- Linear Comparison Bar -->
+<div class="w-full bg-surface-container-high h-2.5 rounded-full overflow-hidden mt-space-xs flex">
+<div aria-label="26,5% Pengeluaran" class="bg-primary h-full rounded-full transition-all" style="width: 26.5%;"></div>
+<div aria-label="73,5% Margin Aman" class="bg-surface-container-highest h-full flex-1"></div>
+</div>
+<div class="flex justify-between text-label-sm font-label-sm text-outline mt-0.5">
+<span>Pengeluaran: 26,5%</span>
+<span>Margin Kas Bersih: 73,5%</span>
+</div>
+</div>
+<!-- Ratio Card 2: Rasio Bensin -->
+<div class="flex flex-col bg-surface-container-low rounded-lg p-space-md gap-space-xs">
+<div class="flex items-start justify-between">
+<div class="flex flex-col min-w-0">
+<span class="text-label-lg font-label-lg text-on-surface font-semibold">Rasio Beban Bensin</span>
+<span class="text-label-sm font-label-sm text-outline">Rp550.000 ÷ Rp3.850.000 × 100%</span>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<span class="text-headline-md font-headline-md text-on-surface font-bold">14,3%</span>
+<span class="text-label-sm font-label-sm text-primary font-semibold bg-primary-fixed/40 px-1.5 py-0.5 rounded mt-0.5">
+            Terkontrol Efisien
+          </span>
+</div>
+</div>
+<!-- Linear Comparison Bar -->
+<div class="w-full bg-surface-container-high h-2.5 rounded-full overflow-hidden mt-space-xs flex">
+<div aria-label="14,3% Bensin" class="bg-tertiary h-full rounded-full transition-all" style="width: 14.3%;"></div>
+<div aria-label="85,7% Beban Lain dan Kas Bersih" class="bg-surface-container-highest h-full flex-1"></div>
+</div>
+<div class="flex justify-between text-label-sm font-label-sm text-outline mt-0.5">
+<span>Bensin: 14,3% dari Pendapatan</span>
+<span>Standar Aman Ojol &lt; 20%</span>
+</div>
+</div>
+</div>
+<!-- Visual Driver Atmosphere Snapshot Placeholder -->
+<div class="flex flex-col bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+<div class="w-full h-32 bg-cover bg-center relative flex items-end p-space-md" data-alt="An Indonesian motorcycle taxi driver helmet and smartphone mounted on the handlebar, parked under roadside tree shade during an afternoon shift in Jakarta, captured with high natural contrast, crisp clean lighting, utilitarian and dignified tone." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC5ROX_SW-Bx1ukUDO0NFmJYMJNFVMzuH_AKCk6ZY5OPTtAoNeHfe37lcusmbehGx8y1DkIhQmGhesj7Y15SPtz5Dn44jhN07KLDU5iUrC6icO-o9NfuBZp8CRVQfjIzYFc0rxOYHpO-uRn3PvBMt33PTTL-FurFpWWGnq4JII1YBAaHaSsWoG-cxc1Ic-ruBpxF13o1rBGH4UJMGRraUHwD9bvzDOWp6cguw1rdM-P0ghdj1dlV3NC')">
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-inverse-surface/30 to-transparent"></div>
+<div class="relative z-10 flex items-center justify-between w-full">
+<div class="flex flex-col">
+<span class="text-label-sm font-label-sm text-inverse-on-surface opacity-90 uppercase tracking-wider">Performa Rute Narik</span>
+<span class="text-body-md font-body-md text-on-primary font-semibold">18 Hari Tertib Catat Kas</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-lowest/90 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Expense Breakdown Section -->
+<div class="flex flex-col bg-surface-container-lowest rounded-xl p-space-md shadow-sm gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-headline-sm font-headline-sm text-on-surface">Rincian Pengeluaran</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Periode 1 – 18 September</span>
+</div>
+<span class="text-headline-sm font-headline-sm text-on-surface font-bold">Rp1.020.000</span>
+</div>
+<!-- Stacked Segmented Proportion Bar -->
+<div class="flex flex-col gap-1">
+<div class="w-full h-3 rounded-full overflow-hidden flex bg-surface-container-high">
+<!-- Bensin: 53.9% -->
+<div class="bg-tertiary h-full transition-all" style="width: 53.9%;" title="Bensin 53.9%"></div>
+<!-- Makan & Minum: 21.6% -->
+<div class="bg-primary-container h-full transition-all" style="width: 21.6%;" title="Makan &amp; Minum 21.6%"></div>
+<!-- Servis & Sparepart: 14.7% -->
+<div class="bg-secondary h-full transition-all" style="width: 14.7%;" title="Servis Motor 14.7%"></div>
+<!-- Lainnya: 9.8% -->
+<div class="bg-outline h-full transition-all" style="width: 9.8%;" title="Lainnya 9.8%"></div>
+</div>
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline">
+<span>4 Kategori Pengeluaran</span>
+<span>100% Tercatat Riil</span>
+</div>
+</div>
+<!-- Category Expense List -->
+<div class="flex flex-col gap-space-sm divide-y-0">
+<!-- Item 1: Bensin -->
+<div class="flex items-center justify-between p-space-sm bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-9 h-9 rounded-lg bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed shrink-0">
+<span class="material-symbols-outlined text-[20px]">local_gas_station</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-body-md font-body-md text-on-surface font-semibold truncate">Bensin Pertalite</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">53,9% beban • 14,3% omzet</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<span class="text-body-lg font-body-lg text-on-surface font-bold">Rp550.000</span>
+<span class="text-label-sm font-label-sm text-outline">12 pengisian</span>
+</div>
+</div>
+<!-- Item 2: Makan & Minum -->
+<div class="flex items-center justify-between p-space-sm bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-9 h-9 rounded-lg bg-primary-fixed flex items-center justify-center text-on-primary-fixed shrink-0">
+<span class="material-symbols-outlined text-[20px]">restaurant</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-body-md font-body-md text-on-surface font-semibold truncate">Makan &amp; Minum</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">21,6% dari pengeluaran</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<span class="text-body-lg font-body-lg text-on-surface font-bold">Rp220.000</span>
+<span class="text-label-sm font-label-sm text-outline">Warung &amp; Kopi</span>
+</div>
+</div>
+<!-- Item 3: Servis Motor & Sparepart -->
+<div class="flex items-center justify-between p-space-sm bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-9 h-9 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-fixed shrink-0">
+<span class="material-symbols-outlined text-[20px]">build</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-body-md font-body-md text-on-surface font-semibold truncate">Servis Motor &amp; Oli</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">14,7% dari pengeluaran</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<span class="text-body-lg font-body-lg text-on-surface font-bold">Rp150.000</span>
+<span class="text-label-sm font-label-sm text-outline">Ganti oli mesin</span>
+</div>
+</div>
+<!-- Item 4: Lainnya (Parkir, Pulsa) -->
+<div class="flex items-center justify-between p-space-sm bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-body-md font-body-md text-on-surface font-semibold truncate">Parkir, Pulsa &amp; Lainnya</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">9,8% dari pengeluaran</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<span class="text-body-lg font-body-lg text-on-surface font-bold">Rp100.000</span>
+<span class="text-label-sm font-label-sm text-outline">Paket data &amp; karcis</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Operational Dignity / Street Mileage Card -->
+<div class="flex items-center gap-space-sm bg-surface-container p-space-md rounded-xl">
+<div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">two_wheeler</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-label-lg font-label-lg text-on-surface font-bold">Disiplin Kas Terjaga</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant leading-tight">
+        Pengeluaran berada di batas ideal di bawah 30% dari total pendapatan kotor.
+      </span>
+</div>
+</div>
+<!-- Summary & Export Actions -->
+<div class="flex flex-col gap-space-sm pt-space-xs mb-space-lg">
+<button aria-label="Bagikan Rincian Periode ke WhatsApp atau PDF" class="min-h-[48px] w-full bg-surface-container-lowest text-on-surface hover:bg-surface-container active:scale-[0.99] rounded-lg p-space-md flex items-center justify-center gap-space-xs transition-all shadow-sm" id="btnShareReport" type="button">
+<span class="material-symbols-outlined text-primary text-[20px]">share</span>
+<span class="text-label-lg font-label-lg font-bold">Bagikan Rincian Periode (WhatsApp / PDF)</span>
+</button>
+<a class="min-h-[44px] w-full flex items-center justify-center text-center text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors py-space-xs" href="#">
+<span class="material-symbols-outlined text-[18px] mr-1">history</span>
+      Lihat Transaksi Mentah Harian (18 Hari)
+    </a>
+</div>
+</div>
+<script>
+  // Micro-interaction for sharing feedback
+  document.getElementById('btnShareReport')?.addEventListener('click', function() {
+    const originalText = this.innerHTML;
+    this.innerHTML = '<span class="material-symbols-outlined text-primary text-[20px] animate-spin">refresh</span><span class="text-label-lg font-label-lg font-bold">Menyiapkan Rekap Ringkas...</span>';
+    setTimeout(() => {
+      this.innerHTML = '<span class="material-symbols-outlined text-primary text-[20px]">check_circle</span><span class="text-label-lg font-label-lg font-bold">Rekap Siap Dibagikan!</span>';
+      setTimeout(() => {
+        this.innerHTML = originalText;
+      }, 2000);
+    }, 600);
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/95 backdrop-blur-xl shadow-[0_-2px_12px_rgba(0,0,0,0.05)]" data-active-classes="text-primary font-bold"><div class="max-w-[480px] mx-auto h-16 px-space-xs grid grid-cols-4 items-center"><a class="flex flex-col items-center justify-center min-h-[44px] py-space-xs text-on-surface-variant transition-colors" data-path="beranda" href="#"><span class="material-symbols-outlined text-[24px]">home</span><span class="text-label-sm font-label-sm tracking-tight mt-space-xs">Home</span></a><a aria-current="page" class="flex flex-col items-center justify-center min-h-[44px] py-space-xs transition-colors text-primary font-bold" data-path="laporan-keuangan" href="#"><span class="material-symbols-outlined text-[24px]">account_balance_wallet</span><span class="text-label-sm font-label-sm tracking-tight mt-space-xs">Uang</span></a><a class="flex flex-col items-center justify-center min-h-[44px] py-space-xs text-on-surface-variant transition-colors" data-path="target-harian" href="#"><span class="material-symbols-outlined text-[24px]">flag</span><span class="text-label-sm font-label-sm tracking-tight mt-space-xs">Target</span></a><a class="flex flex-col items-center justify-center min-h-[44px] py-space-xs text-on-surface-variant transition-colors" data-path="pengaturan" href="#"><span class="material-symbols-outlined text-[24px]">more_horiz</span><span class="text-label-sm font-label-sm tracking-tight mt-space-xs">Lainnya</span></a></div></nav></body></html>

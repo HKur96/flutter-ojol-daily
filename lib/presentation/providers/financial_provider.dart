@@ -1,0 +1,318 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../../data/database_helper.dart';
+import '../../data/repositories.dart';
+import '../../domain/enums.dart';
+import '../../domain/financial_calculator.dart';
+import '../../domain/financial_state.dart';
+import '../../domain/models.dart';
+import '../../services/notification_service.dart';
+
+class FinancialProvider extends ChangeNotifier {
+  final FinancialRepository repository;
+
+  FinancialProvider({required this.repository});
+
+  factory FinancialProvider.create() {
+    return FinancialProvider(
+      repository: FinancialRepository(DatabaseHelper()),
+    );
+  }
+
+  FinancialState _state = FinancialState.initial();
+  FinancialState get state => _state;
+
+  List<IncomeTransaction> _incomes = [];
+  List<ExpenseTransaction> _expenses = [];
+  List<AllocationTransaction> _allocations = [];
+  List<ObligationDefinition> _obligations = [];
+  List<ObligationPayment> _payments = [];
+  List<DayActivity> _dayActivities = [];
+  TargetDefinition? _currentTarget;
+  ReminderSettings _reminderSettings = const ReminderSettings();
+  ReminderLog? _todayReminderLog;
+
+  List<IncomeTransaction> get incomes => _incomes;
+  List<ExpenseTransaction> get expenses => _expenses;
+  List<AllocationTransaction> get allocations => _allocations;
+  List<ObligationDefinition> get obligations => _obligations;
+  List<ObligationPayment> get payments => _payments;
+  List<DayActivity> get dayActivities => _dayActivities;
+  TargetDefinition? get currentTarget => _currentTarget;
+  ReminderSettings get reminderSettings => _reminderSettings;
+  ReminderLog? get todayReminderLog => _todayReminderLog;
+
+  int get incomeTodayAmount {
+    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    return _incomes
+        .where((i) => i.status == TransactionStatus.active && DateFormat('yyyy-MM-dd').format(i.transactionDate) == todayStr)
+        .fold<int>(0, (sum, i) => sum + i.amount);
+  }
+
+  DayStatus get todayDayStatus {
+    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final activity = _dayActivities.firstWhere((a) => a.dateString == todayStr, orElse: () => DayActivity(dateString: todayStr, status: DayStatus.working));
+    return activity.status;
+  }
+
+  bool _isLoading = true;
+  bool get isLoading => _isLoading;
+
+  /// Load all data from SQLite repository and recalculate FinancialState
+  Future<void> loadData() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _incomes = await repository.getAllIncomes();
+      _expenses = await repository.getAllExpenses();
+      _allocations = await repository.getAllAllocations();
+      _obligations = await repository.getAllObligations();
+      _payments = await repository.getAllObligationPayments();
+      _dayActivities = await repository.getAllDayActivities();
+
+      final currentMonthStr = "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}";
+      _currentTarget = await repository.getTargetForMonth(currentMonthStr);
+      _reminderSettings = await repository.getReminderSettings();
+
+      final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      _todayReminderLog = await repository.getReminderLog(todayStr);
+
+      _recalculateState();
+
+      // Notification sync
+      if (_reminderSettings.enabled && incomeTodayAmount == 0 && todayDayStatus != DayStatus.off) {
+        await NotificationService().scheduleDailyReminders(_reminderSettings);
+      } else {
+        await NotificationService().cancelAllReminders();
+      }
+    } catch (e) {
+      debugPrint("Error loading financial data: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> saveReminderSettings(ReminderSettings settings) async {
+    _reminderSettings = settings;
+    await repository.saveReminderSettings(settings);
+    if (settings.enabled) {
+      await NotificationService().scheduleDailyReminders(settings);
+    } else {
+      await NotificationService().cancelAllReminders();
+    }
+    notifyListeners();
+  }
+
+  void _recalculateState() {
+    _state = FinancialCalculator.calculateState(
+      incomeList: _incomes,
+      expenseList: _expenses,
+      allocationList: _allocations,
+      obligationList: _obligations,
+      paymentList: _payments,
+      currentTarget: _currentTarget,
+      dayActivities: _dayActivities,
+    );
+  }
+
+  // --- Income Actions ---
+  Future<void> addIncome({
+    required int amount,
+    required String category,
+    String? note,
+    DateTime? transactionDate,
+  }) async {
+    final now = DateTime.now();
+    final income = IncomeTransaction(
+      id: 'inc_${now.millisecondsSinceEpoch}',
+      amount: amount,
+      category: category,
+      note: note,
+      transactionDate: transactionDate ?? now,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await repository.insertIncome(income);
+    await loadData();
+  }
+
+  Future<void> deleteIncome(String id) async {
+    final index = _incomes.indexWhere((i) => i.id == id);
+    if (index != -1) {
+      final updated = _incomes[index].copyWith(
+        status: TransactionStatus.deleted,
+        updatedAt: DateTime.now(),
+      );
+      await repository.updateIncome(updated);
+      await loadData();
+    }
+  }
+
+  // --- Expense Actions ---
+  Future<void> addExpense({
+    required int amount,
+    required String category,
+    required ExpenseSource source,
+    int freeAmountUsed = 0,
+    int allocatedAmountUsed = 0,
+    String? targetObligationId,
+    String? note,
+    DateTime? transactionDate,
+  }) async {
+    final now = DateTime.now();
+    final expense = ExpenseTransaction(
+      id: 'exp_${now.millisecondsSinceEpoch}',
+      amount: amount,
+      category: category,
+      source: source,
+      freeAmountUsed: freeAmountUsed,
+      allocatedAmountUsed: allocatedAmountUsed,
+      targetObligationId: targetObligationId,
+      note: note,
+      transactionDate: transactionDate ?? now,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await repository.insertExpense(expense);
+
+    // If allocated amount was used, update the target allocation transaction usedAmount
+    if (allocatedAmountUsed > 0 && targetObligationId != null) {
+      final obAllocations = _allocations.where((a) => a.obligationId == targetObligationId && a.status == AllocationStatus.active);
+      int remainingToDeduct = allocatedAmountUsed;
+
+      for (final alloc in obAllocations) {
+        if (remainingToDeduct <= 0) break;
+        final availableInAlloc = alloc.amount - alloc.usedAmount;
+        final deduct = remainingToDeduct > availableInAlloc ? availableInAlloc : remainingToDeduct;
+
+        final updatedAlloc = alloc.copyWith(
+          usedAmount: alloc.usedAmount + deduct,
+          status: (alloc.usedAmount + deduct >= alloc.amount) ? AllocationStatus.fullyUsed : AllocationStatus.partiallyUsed,
+          updatedAt: now,
+        );
+        await repository.updateAllocation(updatedAlloc);
+        remainingToDeduct -= deduct;
+      }
+    }
+
+    await loadData();
+  }
+
+  Future<void> deleteExpense(String id) async {
+    final index = _expenses.indexWhere((e) => e.id == id);
+    if (index != -1) {
+      final updated = _expenses[index].copyWith(
+        status: TransactionStatus.deleted,
+        updatedAt: DateTime.now(),
+      );
+      await repository.updateExpense(updated);
+      await loadData();
+    }
+  }
+
+  // --- Allocation Actions ---
+  Future<void> addAllocation({
+    required String obligationId,
+    required int amount,
+    String? note,
+  }) async {
+    final now = DateTime.now();
+    final allocation = AllocationTransaction(
+      id: 'alloc_${now.millisecondsSinceEpoch}',
+      obligationId: obligationId,
+      amount: amount,
+      allocationDate: now,
+      note: note,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await repository.insertAllocation(allocation);
+    await loadData();
+  }
+
+  // --- Obligation Actions ---
+  Future<void> addObligation({
+    required String name,
+    required int targetAmount,
+    required DateTime dueDate,
+    required String category,
+    String icon = 'payments',
+  }) async {
+    final now = DateTime.now();
+    final obligation = ObligationDefinition(
+      id: 'ob_${now.millisecondsSinceEpoch}',
+      name: name,
+      targetAmount: targetAmount,
+      dueDate: dueDate,
+      category: category,
+      icon: icon,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await repository.insertObligation(obligation);
+    await loadData();
+  }
+
+  Future<bool> payObligation({
+    required String obligationId,
+    required int amount,
+    String? note,
+  }) async {
+    final obSummary = _state.obligationSummaries.firstWhere((o) => o.id == obligationId);
+
+    // Validate FI-004 overpayment prevention
+    if (!FinancialCalculator.validateObligationPayment(
+      currentPaidAmount: obSummary.paidAmount,
+      targetAmount: obSummary.targetAmount,
+      newPaymentAmount: amount,
+    )) {
+      return false; // Payment exceeds obligation target
+    }
+
+    final now = DateTime.now();
+    final payment = ObligationPayment(
+      id: 'pay_${now.millisecondsSinceEpoch}',
+      obligationId: obligationId,
+      amount: amount,
+      paymentDate: now,
+      note: note,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await repository.insertObligationPayment(payment);
+    await loadData();
+    return true;
+  }
+
+  // --- Target & Day Activity Actions ---
+  Future<void> saveMonthlyTarget({
+    required int monthlyTargetAmount,
+    required int totalWorkingDays,
+  }) async {
+    final now = DateTime.now();
+    final currentMonthStr = "${now.year}-${now.month.toString().padLeft(2, '0')}";
+    final target = TargetDefinition(
+      id: 'target_$currentMonthStr',
+      monthlyTargetAmount: monthlyTargetAmount,
+      totalWorkingDays: totalWorkingDays,
+      targetMonth: currentMonthStr,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await repository.saveTarget(target);
+    await loadData();
+  }
+
+  Future<void> setDayStatus(String dateString, DayStatus status) async {
+    final activity = DayActivity(dateString: dateString, status: status);
+    await repository.setDayActivity(activity);
+    await loadData();
+  }
+
+  Future<void> clearAllData() async {
+    await repository.dbHelper.clearAllData();
+    await loadData();
+  }
+}
