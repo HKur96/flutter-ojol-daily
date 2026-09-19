@@ -36,7 +36,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
     final provider = Provider.of<FinancialProvider>(context);
     final state = provider.state;
     final target = state.targetSummary;
@@ -51,7 +55,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 color: AppColors.primaryContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.two_wheeler, color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.two_wheeler,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 10),
             const Text(
@@ -101,7 +109,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   // Offline Reassurance Strip
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(10),
@@ -111,21 +122,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.shield_outlined, size: 16, color: AppColors.primary),
+                            Icon(
+                              Icons.shield_outlined,
+                              size: 16,
+                              color: AppColors.primary,
+                            ),
                             SizedBox(width: 6),
                             Text(
                               "Mode Offline • Tersimpan di HP",
-                              style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.onSurfaceVariant,
+                              ),
                             ),
                           ],
                         ),
                         Row(
                           children: [
-                            Icon(Icons.cloud_done_outlined, size: 14, color: AppColors.primary),
+                            Icon(
+                              Icons.cloud_done_outlined,
+                              size: 14,
+                              color: AppColors.primary,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               "Aman",
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary,
+                              ),
                             ),
                           ],
                         ),
@@ -138,31 +164,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   // Greeting
                   const Text(
                     "Selamat narik 👋",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.onSurface),
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.onSurface,
+                    ),
                   ),
                   const Text(
                     "Bagaimana kondisi uangmu hari ini?",
-                    style: TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.onSurfaceVariant,
+                    ),
                   ),
 
                   const SizedBox(height: 16),
 
                   // Dashboard Reminder Banner (PRD Section 48.8)
-                  if (provider.incomeTodayAmount == 0 && provider.todayDayStatus != DayStatus.off)
+                  if (provider.incomeTodayAmount == 0 &&
+                      provider.todayDayStatus != DayStatus.off)
                     Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryContainer.withValues(alpha: 0.12),
+                        color: AppColors.primaryContainer.withValues(
+                          alpha: 0.12,
+                        ),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.primaryContainer.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: AppColors.primaryContainer.withValues(
+                            alpha: 0.3,
+                          ),
+                        ),
                       ),
                       child: Row(
                         children: [
                           Container(
                             padding: const EdgeInsets.all(10),
-                            decoration: const BoxDecoration(color: AppColors.primaryContainer, shape: BoxShape.circle),
-                            child: const Icon(Icons.notifications_active_outlined, color: Colors.white, size: 20),
+                            decoration: const BoxDecoration(
+                              color: AppColors.primaryContainer,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.notifications_active_outlined,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -171,11 +218,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               children: [
                                 const Text(
                                   "Belum ada pendapatan hari ini",
-                                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.primary),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 13,
+                                    color: AppColors.primary,
+                                  ),
                                 ),
                                 const Text(
                                   "Setelah selesai narik, jangan lupa catat ya.",
-                                  style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.onSurfaceVariant,
+                                  ),
                                 ),
                               ],
                             ),
@@ -184,10 +238,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               minimumSize: const Size(90, 36),
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                             ),
                             onPressed: () => _showQuickInput(context),
-                            child: const Text("Catat", style: TextStyle(fontSize: 12)),
+                            child: const Text(
+                              "Catat",
+                              style: TextStyle(fontSize: 12),
+                            ),
                           ),
                         ],
                       ),
@@ -205,7 +264,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 28),
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: AppColors.warning,
+                            size: 28,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -213,11 +276,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               children: [
                                 const Text(
                                   "Peringatan Alokasi (Shortfall)",
-                                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.warning),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13,
+                                    color: AppColors.warning,
+                                  ),
                                 ),
                                 Text(
                                   "Alokasi kurang ${currencyFormat.format(state.allocationShortfall)} karena pengeluaran mendadak memakan dana alokasi.",
-                                  style: const TextStyle(fontSize: 12, color: AppColors.onSurface),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.onSurface,
+                                  ),
                                 ),
                               ],
                             ),
@@ -241,33 +311,58 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(Icons.verified_user_outlined, size: 18, color: AppColors.primary),
+                                      Icon(
+                                        Icons.verified_user_outlined,
+                                        size: 18,
+                                        color: AppColors.primary,
+                                      ),
                                       SizedBox(width: 6),
                                       Text(
                                         "UANG BEBAS",
-                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.onSurfaceVariant, letterSpacing: 0.5),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.onSurfaceVariant,
+                                          letterSpacing: 0.5,
+                                        ),
                                       ),
                                     ],
                                   ),
                                   Text(
                                     "Yang belum punya tujuan",
-                                    style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.onSurfaceVariant,
+                                    ),
                                   ),
                                 ],
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryContainer.withValues(alpha: 0.12),
+                                  color: AppColors.primaryContainer.withValues(
+                                    alpha: 0.12,
+                                  ),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: const Row(
                                   children: [
-                                    Icon(Icons.lock_open, size: 14, color: AppColors.primary),
+                                    Icon(
+                                      Icons.lock_open,
+                                      size: 14,
+                                      color: AppColors.primary,
+                                    ),
                                     SizedBox(width: 4),
                                     Text(
                                       "Aman Dipakai",
-                                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary),
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.primary,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -294,18 +389,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             child: Column(
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text("Uang tersedia (fisik):", style: TextStyle(fontSize: 13, color: AppColors.onSurfaceVariant)),
-                                    Text(currencyFormat.format(state.cashAvailable), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                                    const Text(
+                                      "Uang tersedia (fisik):",
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: AppColors.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    Text(
+                                      currencyFormat.format(
+                                        state.cashAvailable,
+                                      ),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 4),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text("Sudah dialokasikan:", style: TextStyle(fontSize: 13, color: AppColors.onSurfaceVariant)),
-                                    Text("- ${currencyFormat.format(state.totalActiveAllocation)}", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.tertiary)),
+                                    const Text(
+                                      "Sudah dialokasikan:",
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: AppColors.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    Text(
+                                      "- ${currencyFormat.format(state.totalActiveAllocation)}",
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.tertiary,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ],
@@ -330,18 +454,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             children: [
                               const Text(
                                 "Pendapatan Hari Ini",
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                               if (target != null)
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primaryContainer.withValues(alpha: 0.1),
+                                    color: AppColors.primaryContainer
+                                        .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
                                     "${target.progressPercent.toStringAsFixed(0)}% target bulan",
-                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary),
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primary,
+                                    ),
                                   ),
                                 ),
                             ],
@@ -353,14 +488,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             children: [
                               Text(
                                 currencyFormat.format(state.totalIncome),
-                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
                               const SizedBox(width: 8),
                               if (target != null)
                                 Expanded(
                                   child: Text(
                                     "Target: ${currencyFormat.format(target.requiredDailyIncome)}/hari narik",
-                                    style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.onSurfaceVariant,
+                                    ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -389,7 +530,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           icon: Icons.add_circle_outline,
                           label: "+ Pendapatan",
                           color: AppColors.primary,
-                          bgColor: AppColors.primaryContainer.withValues(alpha: 0.12),
+                          bgColor: AppColors.primaryContainer.withValues(
+                            alpha: 0.12,
+                          ),
                           onTap: () => widget.onNavigate(1), // Income tab
                         ),
                       ),
@@ -399,7 +542,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           icon: Icons.remove_circle_outline,
                           label: "- Pengeluaran",
                           color: AppColors.error,
-                          bgColor: AppColors.errorContainer.withValues(alpha: 0.4),
+                          bgColor: AppColors.errorContainer.withValues(
+                            alpha: 0.4,
+                          ),
                           onTap: () => widget.onNavigate(2), // Expense tab
                         ),
                       ),
@@ -419,7 +564,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           icon: Icons.payments_outlined,
                           label: "Bayar",
                           color: AppColors.tertiary,
-                          bgColor: AppColors.tertiaryContainer.withValues(alpha: 0.2),
+                          bgColor: AppColors.tertiaryContainer.withValues(
+                            alpha: 0.2,
+                          ),
                           onTap: () => widget.onNavigate(4), // Obligation tab
                         ),
                       ),
@@ -432,10 +579,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   if (state.obligationSummaries.isNotEmpty) ...[
                     const Text(
                       "Kewajiban Terdekat",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 8),
-                    _NearestObligationCard(summary: state.obligationSummaries.first, onNavigate: () => widget.onNavigate(4)),
+                    _NearestObligationCard(
+                      summary: state.obligationSummaries.first,
+                      onNavigate: () => widget.onNavigate(4),
+                    ),
                   ],
 
                   const SizedBox(height: 16),
@@ -449,12 +602,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     child: const Row(
                       children: [
-                        Icon(Icons.favorite, color: AppColors.primary, size: 20),
+                        Icon(
+                          Icons.favorite,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
                         SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             "Utamakan keselamatan di jalan. Istirahat sejenak jika mulai lelah narik!",
-                            style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.onSurfaceVariant,
+                            ),
                           ),
                         ),
                       ],
@@ -518,11 +678,18 @@ class _NearestObligationCard extends StatelessWidget {
   final ObligationSummary summary;
   final VoidCallback onNavigate;
 
-  const _NearestObligationCard({required this.summary, required this.onNavigate});
+  const _NearestObligationCard({
+    required this.summary,
+    required this.onNavigate,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
 
     return Card(
       child: Padding(
@@ -535,11 +702,18 @@ class _NearestObligationCard extends StatelessWidget {
               children: [
                 Text(
                   summary.name,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 Text(
                   currencyFormat.format(summary.targetAmount),
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.onSurface),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.onSurface,
+                  ),
                 ),
               ],
             ),
@@ -549,11 +723,18 @@ class _NearestObligationCard extends StatelessWidget {
               children: [
                 Text(
                   "Sudah disiapkan: ${currencyFormat.format(summary.allocatedAmount)}",
-                  style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
                 Text(
                   "${summary.allocationProgressPercent.toStringAsFixed(0)}% siap",
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                  ),
                 ),
               ],
             ),

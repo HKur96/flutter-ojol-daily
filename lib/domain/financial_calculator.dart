@@ -20,12 +20,22 @@ class FinancialCalculator {
     final today = todayDate ?? DateTime.now();
 
     // 1. Total Income (PRD 8.1 - FI-001)
-    final activeIncomes = incomeList.where((i) => i.status == TransactionStatus.active);
-    final totalIncome = activeIncomes.fold<int>(0, (sum, item) => sum + item.amount);
+    final activeIncomes = incomeList.where(
+      (i) => i.status == TransactionStatus.active,
+    );
+    final totalIncome = activeIncomes.fold<int>(
+      0,
+      (sum, item) => sum + item.amount,
+    );
 
     // 2. Total Expense (PRD 9 - FI-002)
-    final activeExpenses = expenseList.where((e) => e.status == TransactionStatus.active);
-    final totalExpense = activeExpenses.fold<int>(0, (sum, item) => sum + item.amount);
+    final activeExpenses = expenseList.where(
+      (e) => e.status == TransactionStatus.active,
+    );
+    final totalExpense = activeExpenses.fold<int>(
+      0,
+      (sum, item) => sum + item.amount,
+    );
 
     // 3. Cash Available (PRD 16, 31)
     final rawCash = totalIncome - totalExpense;
@@ -33,15 +43,26 @@ class FinancialCalculator {
 
     // Fuel expense calculation for Fuel Ratio (PRD 28)
     final fuelExpense = activeExpenses
-        .where((e) => e.category.toLowerCase().contains('bensin') || e.category.toLowerCase().contains('fuel'))
+        .where(
+          (e) =>
+              e.category.toLowerCase().contains('bensin') ||
+              e.category.toLowerCase().contains('fuel'),
+        )
         .fold<int>(0, (sum, item) => sum + item.amount);
 
     // 4. Total Active Allocations (PRD 10 - FI-003)
-    final activeAllocations = allocationList.where((a) => a.status != AllocationStatus.cancelled);
-    final totalActiveAllocation = activeAllocations.fold<int>(0, (sum, item) => sum + item.amount - item.usedAmount);
+    final activeAllocations = allocationList.where(
+      (a) => a.status != AllocationStatus.cancelled,
+    );
+    final totalActiveAllocation = activeAllocations.fold<int>(
+      0,
+      (sum, item) => sum + item.amount - item.usedAmount,
+    );
 
     // 5. Free Cash & Allocation Shortfall (PRD 15, 16, 30, 31, FI-005, FI-006)
-    final freeCash = (cashAvailable - totalActiveAllocation) < 0 ? 0 : (cashAvailable - totalActiveAllocation);
+    final freeCash = (cashAvailable - totalActiveAllocation) < 0
+        ? 0
+        : (cashAvailable - totalActiveAllocation);
     final rawShortfall = totalActiveAllocation - cashAvailable;
     final allocationShortfall = rawShortfall < 0 ? 0 : rawShortfall;
     final hasShortfall = allocationShortfall > 0;
@@ -51,11 +72,18 @@ class FinancialCalculator {
 
     for (final ob in obligationList) {
       // Sum allocations for this obligation
-      final obAllocations = activeAllocations.where((a) => a.obligationId == ob.id);
-      final obAllocatedAmount = obAllocations.fold<int>(0, (sum, a) => sum + a.amount - a.usedAmount);
+      final obAllocations = activeAllocations.where(
+        (a) => a.obligationId == ob.id,
+      );
+      final obAllocatedAmount = obAllocations.fold<int>(
+        0,
+        (sum, a) => sum + a.amount - a.usedAmount,
+      );
 
       // Sum payments for this obligation (PRD 11)
-      final obPayments = paymentList.where((p) => p.obligationId == ob.id && p.status == TransactionStatus.active);
+      final obPayments = paymentList.where(
+        (p) => p.obligationId == ob.id && p.status == TransactionStatus.active,
+      );
       final obPaidAmount = obPayments.fold<int>(0, (sum, p) => sum + p.amount);
 
       // Sisa Kewajiban (PRD 12)
@@ -82,21 +110,25 @@ class FinancialCalculator {
       );
 
       // Individual shortfall
-      final individualShortfall = (obAllocatedAmount > cashAvailable) ? (obAllocatedAmount - cashAvailable) : 0;
+      final individualShortfall = (obAllocatedAmount > cashAvailable)
+          ? (obAllocatedAmount - cashAvailable)
+          : 0;
 
-      obligationSummaries.add(ObligationSummary(
-        id: ob.id,
-        name: ob.name,
-        targetAmount: ob.targetAmount,
-        allocatedAmount: obAllocatedAmount,
-        paidAmount: obPaidAmount,
-        remainingAmount: remainingAmount,
-        allocationProgressPercent: allocationProgressPercent,
-        paymentProgressPercent: paymentProgressPercent,
-        dueDate: ob.dueDate,
-        status: status,
-        shortfall: individualShortfall,
-      ));
+      obligationSummaries.add(
+        ObligationSummary(
+          id: ob.id,
+          name: ob.name,
+          targetAmount: ob.targetAmount,
+          allocatedAmount: obAllocatedAmount,
+          paidAmount: obPaidAmount,
+          remainingAmount: remainingAmount,
+          allocationProgressPercent: allocationProgressPercent,
+          paymentProgressPercent: paymentProgressPercent,
+          dueDate: ob.dueDate,
+          status: status,
+          shortfall: individualShortfall,
+        ),
+      );
     }
 
     // Sort obligations by priority & due date (PRD 21)
@@ -106,17 +138,26 @@ class FinancialCalculator {
     TargetSummary? targetSummary;
     if (currentTarget != null) {
       final monthlyTarget = currentTarget.monthlyTargetAmount;
-      final remainingTarget = (monthlyTarget - totalIncome) < 0 ? 0 : (monthlyTarget - totalIncome);
+      final remainingTarget = (monthlyTarget - totalIncome) < 0
+          ? 0
+          : (monthlyTarget - totalIncome);
 
       // Days off count (PRD 1.1, 23, FI-009)
-      final offDaysCount = dayActivities.where((d) => d.status == DayStatus.off).length;
+      final offDaysCount = dayActivities
+          .where((d) => d.status == DayStatus.off)
+          .length;
 
       // Remaining working days = Total planned working days - OFF days
-      final effectiveWorkingDays = currentTarget.totalWorkingDays - offDaysCount;
-      final remainingWorkingDays = effectiveWorkingDays <= 0 ? 1 : effectiveWorkingDays;
+      final effectiveWorkingDays =
+          currentTarget.totalWorkingDays - offDaysCount;
+      final remainingWorkingDays = effectiveWorkingDays <= 0
+          ? 1
+          : effectiveWorkingDays;
 
       // Required Daily Income (PRD 24)
-      final requiredDailyIncome = remainingTarget > 0 ? (remainingTarget ~/ remainingWorkingDays) : 0;
+      final requiredDailyIncome = remainingTarget > 0
+          ? (remainingTarget ~/ remainingWorkingDays)
+          : 0;
 
       final progressPercent = monthlyTarget > 0
           ? ((totalIncome / monthlyTarget) * 100.0).clamp(0.0, 100.0)
@@ -145,8 +186,12 @@ class FinancialCalculator {
     }
 
     // Expense Ratio (PRD 27) & Fuel Ratio (PRD 28)
-    final expenseToIncomeRatio = totalIncome > 0 ? ((totalExpense / totalIncome) * 100.0) : 0.0;
-    final fuelToIncomeRatio = totalIncome > 0 ? ((fuelExpense / totalIncome) * 100.0) : 0.0;
+    final expenseToIncomeRatio = totalIncome > 0
+        ? ((totalExpense / totalIncome) * 100.0)
+        : 0.0;
+    final fuelToIncomeRatio = totalIncome > 0
+        ? ((fuelExpense / totalIncome) * 100.0)
+        : 0.0;
 
     return FinancialState(
       totalIncome: totalIncome,
@@ -190,7 +235,9 @@ class FinancialCalculator {
       return ObligationStatus.partiallyPaid;
     }
     // 5. READY
-    if (allocatedAmount >= targetAmount && paidAmount == 0 && targetAmount > 0) {
+    if (allocatedAmount >= targetAmount &&
+        paidAmount == 0 &&
+        targetAmount > 0) {
       return ObligationStatus.ready;
     }
     // 6. IN_PROGRESS
