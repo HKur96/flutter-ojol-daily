@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/widgets/custom_text_form_field.dart';
 import '../providers/financial_provider.dart';
 import '../theme/app_theme.dart';
 import '../../main.dart';
@@ -257,12 +258,11 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
                           children: [
                             _buildSectionHeader('Target Pendapatan Bulanan'),
                             const SizedBox(height: 10),
-                            TextFormField(
+                            CustomTextFormField.currency(
                               controller: _targetController,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
+                              labelText: 'Target per bulan',
+                              hintText: 'Contoh: 5.000.000',
+                              
                               validator: (v) {
                                 if (v == null || v.isEmpty) {
                                   return 'Masukkan target pendapatan';
@@ -277,24 +277,22 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
                                 }
                                 return null;
                               },
-                              decoration: InputDecoration(
-                                labelText: 'Target per bulan',
-                                prefixText: 'Rp ',
-                                hintText: 'Contoh: 5000000',
-                                prefixStyle: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.primary,
-                                ),
-                              ),
                             ),
                             const SizedBox(height: 12),
-                            TextFormField(
+                            CustomTextFormField(
                               controller: _workingDaysController,
                               keyboardType: TextInputType.number,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
                               ],
+                              labelText: 'Hari kerja per bulan',
+                              hintText: '26',
+                              suffix: const Text(
+                                'hari',
+                                style: TextStyle(
+                                  color: AppColors.secondary,
+                                ),
+                              ),
                               validator: (v) {
                                 if (v == null || v.isEmpty) {
                                   return 'Masukkan hari kerja';
@@ -305,14 +303,6 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
                                 }
                                 return null;
                               },
-                              decoration: InputDecoration(
-                                labelText: 'Hari kerja per bulan',
-                                hintText: '26',
-                                suffixText: 'hari',
-                                suffixStyle: TextStyle(
-                                  color: AppColors.secondary,
-                                ),
-                              ),
                             ),
                           ],
                         ),
@@ -367,41 +357,23 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
                               Expanded(
                                 child: Column(
                                   children: [
-                                    TextFormField(
+                                    CustomTextFormField(
                                       controller: ob.nameController,
-                                      decoration: InputDecoration(
-                                        labelText: 'Nama kewajiban',
-                                        hintText: 'Contoh: Cicilan Motor',
-                                        isDense: true,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                              vertical: 10,
-                                            ),
+                                      labelText: 'Nama kewajiban',
+                                      hintText: 'Contoh: Cicilan Motor',
+                                      contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 10,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
-                                    TextFormField(
+                                    CustomTextFormField.currency(
                                       controller: ob.amountController,
-                                      keyboardType: TextInputType.number,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                      ],
-                                      decoration: InputDecoration(
-                                        labelText: 'Nominal per bulan',
-                                        prefixText: 'Rp ',
-                                        hintText: '0',
-                                        isDense: true,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                              vertical: 10,
-                                            ),
-                                        prefixStyle: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.primary,
-                                        ),
+                                      labelText: 'Nominal per bulan',
+                                      hintText: '0',
+                                      contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 10,
                                       ),
                                     ),
                                   ],
