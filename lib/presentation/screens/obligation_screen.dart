@@ -92,6 +92,7 @@ class ObligationScreen extends StatelessWidget {
               },
             ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'obligation_fab',
         onPressed: () => _showAddObligationSheet(context, provider),
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add, color: Colors.white),

@@ -111,6 +111,7 @@ class ExpenseScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'expense_fab',
         onPressed: () => _showAddExpenseSheet(context),
         backgroundColor: AppColors.error,
         icon: const Icon(Icons.add, color: Colors.white),

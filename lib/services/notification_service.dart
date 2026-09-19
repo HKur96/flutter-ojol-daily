@@ -14,7 +14,8 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   QuickInputCallback? _onNotificationTap;
 
   bool _isInitialized = false;
@@ -61,10 +62,13 @@ class NotificationService {
   Future<bool> requestPermissions() async {
     if (kIsWeb) return false;
     try {
-      final androidImplementation =
-          _notificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      final androidImplementation = _notificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       if (androidImplementation != null) {
-        final granted = await androidImplementation.requestNotificationsPermission();
+        final granted = await androidImplementation
+            .requestNotificationsPermission();
         return granted ?? false;
       }
       return true;
@@ -83,8 +87,6 @@ class NotificationService {
 
     await cancelAllReminders();
 
-    final now = DateTime.now();
-
     // Schedule First Reminder (Default 20:00)
     if (settings.firstReminderEnabled) {
       final firstTimeParts = settings.firstReminderTime.split(':');
@@ -94,7 +96,8 @@ class NotificationService {
       await _scheduleDailyNotification(
         id: 1001,
         title: "Jangan lupa catat pendapatan",
-        body: "Sudah selesai narik? Catat pendapatan hari ini supaya targetmu tetap akurat.",
+        body:
+            "Sudah selesai narik? Catat pendapatan hari ini supaya targetmu tetap akurat.",
         hour: firstHour,
         minute: firstMinute,
         payload: "QUICK_INPUT_INCOME",
@@ -137,7 +140,10 @@ class NotificationService {
         priority: Priority.high,
       );
       const darwinDetails = DarwinNotificationDetails();
-      const details = NotificationDetails(android: androidDetails, iOS: darwinDetails);
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: darwinDetails,
+      );
 
       await _notificationsPlugin.zonedSchedule(
         id,
@@ -146,7 +152,8 @@ class NotificationService {
         scheduledDate,
         details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.time,
         payload: payload,
       );
@@ -167,7 +174,14 @@ class NotificationService {
 
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    tz.TZDateTime scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }

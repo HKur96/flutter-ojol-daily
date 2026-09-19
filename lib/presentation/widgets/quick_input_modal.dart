@@ -94,14 +94,16 @@ class _QuickInputModalState extends State<QuickInputModal> {
               final amount = int.tryParse(_amountController.text.replaceAll('.', '').replaceAll(',', '')) ?? 0;
               if (amount > 0) {
                 final provider = Provider.of<FinancialProvider>(context, listen: false);
+                final navigator = Navigator.of(context);
+                final messenger = ScaffoldMessenger.of(context);
                 await provider.addIncome(
                   amount: amount,
                   category: _selectedCategory,
                   note: _noteController.text.isNotEmpty ? _noteController.text : "Quick Input Pendapatan",
                 );
                 if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  navigator.pop();
+                  messenger.showSnackBar(
                     const SnackBar(content: Text("Pendapatan berhasil dicatat. Dashboard & target telah diperbarui!")),
                   );
                 }

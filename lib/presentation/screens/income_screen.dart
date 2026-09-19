@@ -82,6 +82,7 @@ class IncomeScreen extends StatelessWidget {
               },
             ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'income_fab',
         onPressed: () => _showAddIncomeSheet(context),
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add, color: Colors.white),

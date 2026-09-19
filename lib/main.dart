@@ -8,6 +8,7 @@ import 'presentation/screens/income_screen.dart';
 import 'presentation/screens/obligation_screen.dart';
 import 'presentation/screens/report_screen.dart';
 import 'presentation/screens/settings_screen.dart';
+import 'presentation/screens/splash_decision_screen.dart';
 import 'presentation/screens/target_screen.dart';
 import 'presentation/theme/app_theme.dart';
 
@@ -27,7 +28,7 @@ class OjolDailyApp extends StatelessWidget {
         title: 'Ojol Daily',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        home: const MainNavigationScreen(),
+        home: const SplashDecisionScreen(),
       ),
     );
   }

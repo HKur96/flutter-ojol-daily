@@ -3,14 +3,32 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../domain/enums.dart';
 import '../../domain/financial_state.dart';
+import '../../services/notification_service.dart';
 import '../providers/financial_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/quick_input_modal.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   final Function(int navIndex) onNavigate;
 
   const DashboardScreen({super.key, required this.onNavigate});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _requestNotificationPermission();
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    final service = NotificationService();
+    await service.initialize();
+    await service.requestPermissions();
+  }
 
   void _showQuickInput(BuildContext context) {
     QuickInputModal.show(context);
@@ -372,7 +390,7 @@ class DashboardScreen extends StatelessWidget {
                           label: "+ Pendapatan",
                           color: AppColors.primary,
                           bgColor: AppColors.primaryContainer.withValues(alpha: 0.12),
-                          onTap: () => onNavigate(1), // Income tab
+                          onTap: () => widget.onNavigate(1), // Income tab
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -382,7 +400,7 @@ class DashboardScreen extends StatelessWidget {
                           label: "- Pengeluaran",
                           color: AppColors.error,
                           bgColor: AppColors.errorContainer.withValues(alpha: 0.4),
-                          onTap: () => onNavigate(2), // Expense tab
+                          onTap: () => widget.onNavigate(2), // Expense tab
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -392,7 +410,7 @@ class DashboardScreen extends StatelessWidget {
                           label: "Alokasikan",
                           color: AppColors.secondary,
                           bgColor: AppColors.secondaryContainer,
-                          onTap: () => onNavigate(3), // Allocation tab
+                          onTap: () => widget.onNavigate(3), // Allocation tab
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -402,7 +420,7 @@ class DashboardScreen extends StatelessWidget {
                           label: "Bayar",
                           color: AppColors.tertiary,
                           bgColor: AppColors.tertiaryContainer.withValues(alpha: 0.2),
-                          onTap: () => onNavigate(4), // Obligation tab
+                          onTap: () => widget.onNavigate(4), // Obligation tab
                         ),
                       ),
                     ],
@@ -417,7 +435,7 @@ class DashboardScreen extends StatelessWidget {
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 8),
-                    _NearestObligationCard(summary: state.obligationSummaries.first, onNavigate: () => onNavigate(4)),
+                    _NearestObligationCard(summary: state.obligationSummaries.first, onNavigate: () => widget.onNavigate(4)),
                   ],
 
                   const SizedBox(height: 16),
