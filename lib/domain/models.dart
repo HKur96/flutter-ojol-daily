@@ -1,6 +1,8 @@
 /// Domain Data Models for Ojol Daily Financial Engine
 library;
 
+import 'package:ojol_daily/core/config/enum.dart';
+
 import 'enums.dart';
 
 /// Single income transaction record (PRD Section 2, 8.1)
@@ -253,7 +255,7 @@ class ObligationDefinition {
   final int targetAmount;
   final DateTime dueDate;
   final String category;
-  final String icon;
+  final ObligationDefinitionType type;
   final bool isCancelled;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -264,7 +266,7 @@ class ObligationDefinition {
     required this.targetAmount,
     required this.dueDate,
     required this.category,
-    this.icon = 'payments',
+    required this.type,
     this.isCancelled = false,
     required this.createdAt,
     required this.updatedAt,
@@ -277,7 +279,7 @@ class ObligationDefinition {
       'targetAmount': targetAmount,
       'dueDate': dueDate.toIso8601String(),
       'category': category,
-      'icon': icon,
+      'type': type.name,
       'isCancelled': isCancelled ? 1 : 0,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
@@ -291,7 +293,7 @@ class ObligationDefinition {
       targetAmount: (map['targetAmount'] as num).toInt(),
       dueDate: DateTime.parse(map['dueDate'] as String),
       category: map['category'] as String,
-      icon: (map['icon'] as String?) ?? 'payments',
+      type: ObligationDefinitionType.fromString(map['type'] as String),
       isCancelled: map['isCancelled'] == 1 || map['isCancelled'] == true,
       createdAt: DateTime.parse(map['createdAt'] as String),
       updatedAt: DateTime.parse(map['updatedAt'] as String),
@@ -304,7 +306,7 @@ class ObligationDefinition {
     int? targetAmount,
     DateTime? dueDate,
     String? category,
-    String? icon,
+    ObligationDefinitionType? type,
     bool? isCancelled,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -315,7 +317,7 @@ class ObligationDefinition {
       targetAmount: targetAmount ?? this.targetAmount,
       dueDate: dueDate ?? this.dueDate,
       category: category ?? this.category,
-      icon: icon ?? this.icon,
+      type: type ?? this.type,
       isCancelled: isCancelled ?? this.isCancelled,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

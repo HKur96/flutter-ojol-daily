@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ojol_daily/core/config/enum.dart';
 import 'package:provider/provider.dart';
 import '../../domain/enums.dart';
 import '../providers/financial_provider.dart';
@@ -196,6 +197,7 @@ class ObligationScreen extends StatelessWidget {
                           targetAmount: amount,
                           dueDate: dueDate,
                           category: 'Umum',
+                          type: ObligationDefinitionType.bulanan,
                         );
                         Navigator.pop(ctx);
                       }

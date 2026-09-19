@@ -6,7 +6,7 @@ import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
   static const String _dbName = 'ojol_daily.db';
-  static const int _dbVersion = 1;
+  static const int _dbVersion = 2;
 
   static Database? _database;
   final Database? customDatabase;
@@ -28,6 +28,7 @@ class DatabaseHelper {
       path,
       version: _dbVersion,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -87,7 +88,7 @@ class DatabaseHelper {
         targetAmount INTEGER NOT NULL,
         dueDate TEXT NOT NULL,
         category TEXT NOT NULL,
-        icon TEXT NOT NULL DEFAULT 'payments',
+        type TEXT NOT NULL DEFAULT 'bulanan',
         isCancelled INTEGER NOT NULL DEFAULT 0,
         createdAt TEXT NOT NULL,
         updatedAt TEXT NOT NULL
@@ -153,6 +154,14 @@ class DatabaseHelper {
         secondReminderSentAt TEXT
       )
     ''');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      try {
+        await db.execute("ALTER TABLE obligation_definitions ADD COLUMN type TEXT NOT NULL DEFAULT 'bulanan'");
+      } catch (_) {}
+    }
   }
 
   /// Reset/clear all database tables (useful for backup/restore or testing)

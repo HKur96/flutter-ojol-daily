@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ojol_daily/core/config/enum.dart';
 import 'package:ojol_daily/domain/enums.dart';
 import 'package:ojol_daily/domain/financial_calculator.dart';
 import 'package:ojol_daily/domain/models.dart';
@@ -128,6 +129,7 @@ void main() {
         targetAmount: 500000,
         dueDate: now.add(const Duration(days: 10)),
         category: 'Motor',
+        type: ObligationDefinitionType.bulanan,
         createdAt: now,
         updatedAt: now,
       );
@@ -169,6 +171,7 @@ void main() {
         targetAmount: 100000,
         dueDate: now.add(const Duration(days: 5)),
         category: 'Rumah',
+        type: ObligationDefinitionType.bulanan,
         createdAt: now,
         updatedAt: now,
       );
@@ -573,6 +576,7 @@ void main() {
         targetAmount: 500000,
         dueDate: now.add(const Duration(days: 15)),
         category: 'Motor',
+        type: ObligationDefinitionType.bulanan,
         createdAt: now,
         updatedAt: now,
       );
@@ -582,6 +586,7 @@ void main() {
         targetAmount: 100000,
         dueDate: now.add(const Duration(days: 3)),
         category: 'Rumah',
+        type: ObligationDefinitionType.bulanan,
         createdAt: now,
         updatedAt: now,
       );

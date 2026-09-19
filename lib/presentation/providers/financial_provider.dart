@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ojol_daily/core/config/enum.dart';
 import '../../data/database_helper.dart';
 import '../../data/repositories.dart';
 import '../../domain/enums.dart';
@@ -238,7 +239,7 @@ class FinancialProvider extends ChangeNotifier {
     required int targetAmount,
     required DateTime dueDate,
     required String category,
-    String icon = 'payments',
+    required ObligationDefinitionType type,
   }) async {
     final now = DateTime.now();
     final obligation = ObligationDefinition(
@@ -247,7 +248,7 @@ class FinancialProvider extends ChangeNotifier {
       targetAmount: targetAmount,
       dueDate: dueDate,
       category: category,
-      icon: icon,
+      type: type,
       createdAt: now,
       updatedAt: now,
     );

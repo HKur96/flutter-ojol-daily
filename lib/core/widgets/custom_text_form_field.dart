@@ -7,9 +7,8 @@ import '../utils/currency_input_formatter.dart';
 class CustomTextFormField extends StatefulWidget {
   final TextEditingController? controller;
   final String? initialValue;
-  final String? labelText;
+  final String labelText;
   final String? hintText;
-  final String? prefixText;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final Widget? suffix;
@@ -34,14 +33,14 @@ class CustomTextFormField extends StatefulWidget {
   final Color? fillColor;
   final BorderRadius? borderRadius;
   final EdgeInsetsGeometry? contentPadding;
+  final TextCapitalization? textCapitalization;
 
   const CustomTextFormField({
     super.key,
     this.controller,
     this.initialValue,
-    this.labelText,
+    required this.labelText,
     this.hintText,
-    this.prefixText,
     this.prefixIcon,
     this.suffixIcon,
     this.suffix,
@@ -66,16 +65,16 @@ class CustomTextFormField extends StatefulWidget {
     this.fillColor,
     this.borderRadius,
     this.contentPadding,
+    this.textCapitalization,
   });
 
   /// Factory constructor for currency / monetary inputs (Rupiah).
   factory CustomTextFormField.currency({
     Key? key,
     TextEditingController? controller,
-    String? labelText = "Nominal (Rp)",
+    required String labelText,
     String? hintText = "0",
-    String? prefixText = "Rp ",
-    Widget? prefixIcon,
+    Widget? prefixIcon = const Text('Rp '),
     Widget? suffixIcon,
     String? Function(String?)? validator,
     ValueChanged<String>? onChanged,
@@ -88,15 +87,16 @@ class CustomTextFormField extends StatefulWidget {
     Color? fillColor,
     BorderRadius? borderRadius,
     EdgeInsetsGeometry? contentPadding,
+    TextInputAction? textInputAction,
   }) {
     return CustomTextFormField(
       key: key,
       controller: controller,
       labelText: labelText,
       hintText: hintText,
-      prefixText: prefixText,
-      prefixIcon: prefixIcon ?? const Icon(Icons.payments_outlined, size: 20, color: AppTheme.primary),
+      prefixIcon: prefixIcon,
       suffixIcon: suffixIcon,
+      textInputAction: textInputAction,
       isCurrency: true,
       keyboardType: TextInputType.number,
       inputFormatters: [CurrencyInputFormatter()],
@@ -118,7 +118,7 @@ class CustomTextFormField extends StatefulWidget {
   factory CustomTextFormField.password({
     Key? key,
     TextEditingController? controller,
-    String? labelText = "Kata Sandi",
+    required String labelText,
     String? hintText,
     Widget? prefixIcon = const Icon(Icons.lock_outline, size: 20),
     String? Function(String?)? validator,
@@ -166,9 +166,54 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
 
   @override
   Widget build(BuildContext context) {
+    final inputStyle =
+        widget.style ??
+        const TextStyle(
+          fontFamily: AppTheme.fontFamily,
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: AppTheme.onSurface,
+        );
+
+    // Ensure prefix widget is ALWAYS visible (focused or unfocused, empty or filled)
+    Widget? effectivePrefixIcon = widget.prefixIcon;
+    BoxConstraints? effectivePrefixConstraints;
+
+    if (widget.isCurrency) {
+      final String prefixString = (widget.prefixIcon is Text)
+          ? ((widget.prefixIcon as Text).data ?? 'Rp ')
+          : 'Rp ';
+      effectivePrefixIcon = Padding(
+        padding: const EdgeInsets.only(left: 14, right: 4),
+        child: Text(
+          prefixString,
+          style: inputStyle, // Match input style for seamless visual alignment
+        ),
+      );
+      effectivePrefixConstraints = const BoxConstraints(
+        minWidth: 0,
+        minHeight: 0,
+      );
+    } else if (widget.prefixIcon != null) {
+      if (widget.prefixIcon is Text) {
+        effectivePrefixIcon = Padding(
+          padding: const EdgeInsets.only(left: 14, right: 4),
+          child: DefaultTextStyle(style: inputStyle, child: widget.prefixIcon!),
+        );
+        effectivePrefixConstraints = const BoxConstraints(
+          minWidth: 0,
+          minHeight: 0,
+        );
+      } else {
+        effectivePrefixIcon = widget.prefixIcon;
+      }
+    }
+
     // Combine input formatters for currency if requested
     List<TextInputFormatter>? formatters = widget.inputFormatters;
-    if (widget.isCurrency && (formatters == null || !formatters.any((f) => f is CurrencyInputFormatter))) {
+    if (widget.isCurrency &&
+        (formatters == null ||
+            !formatters.any((f) => f is CurrencyInputFormatter))) {
       formatters = [...?formatters, CurrencyInputFormatter()];
     }
 
@@ -176,7 +221,9 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     if (widget.isPassword) {
       effectiveSuffixIcon = IconButton(
         icon: Icon(
-          _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+          _obscureText
+              ? Icons.visibility_off_outlined
+              : Icons.visibility_outlined,
           color: AppTheme.onSurfaceVariant,
           size: 20,
         ),
@@ -186,62 +233,74 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
 
     final radius = widget.borderRadius ?? BorderRadius.circular(12);
 
-    return TextFormField(
-      controller: widget.controller,
-      initialValue: widget.initialValue,
-      obscureText: _obscureText,
-      keyboardType: widget.keyboardType,
-      textInputAction: widget.textInputAction,
-      inputFormatters: formatters,
-      validator: widget.validator,
-      onChanged: widget.onChanged,
-      onFieldSubmitted: widget.onFieldSubmitted,
-      onTap: widget.onTap,
-      readOnly: widget.readOnly,
-      enabled: widget.enabled,
-      maxLines: widget.isPassword ? 1 : widget.maxLines,
-      minLines: widget.minLines,
-      maxLength: widget.maxLength,
-      autofocus: widget.autofocus,
-      focusNode: widget.focusNode,
-      style: widget.style ??
-          const TextStyle(
-            fontFamily: AppTheme.fontFamily,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.onSurface,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.labelText,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 4),
+        TextFormField(
+          controller: widget.controller,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          initialValue: widget.initialValue,
+          obscureText: _obscureText,
+          keyboardType: widget.keyboardType,
+          textInputAction: widget.textInputAction,
+          textCapitalization:
+              widget.textCapitalization ?? TextCapitalization.none,
+          inputFormatters: formatters,
+          validator: widget.validator,
+          onChanged: widget.onChanged,
+          onFieldSubmitted: widget.onFieldSubmitted,
+          onTap: widget.onTap,
+          readOnly: widget.readOnly,
+          enabled: widget.enabled,
+          maxLines: widget.isPassword ? 1 : widget.maxLines,
+          minLines: widget.minLines,
+          maxLength: widget.maxLength,
+          autofocus: widget.autofocus,
+          focusNode: widget.focusNode,
+
+          style: inputStyle,
+          onTapOutside: (event) =>
+              FocusManager.instance.primaryFocus?.unfocus(),
+          decoration: InputDecoration(
+            hintText: widget.hintText,
+            prefixIcon: effectivePrefixIcon,
+            prefixIconConstraints: effectivePrefixConstraints,
+            suffixIcon: effectiveSuffixIcon,
+            suffix: widget.suffix,
+
+            filled: true,
+            fillColor: widget.fillColor ?? AppTheme.surfaceContainerLow,
+            contentPadding:
+                widget.contentPadding ??
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: radius,
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: radius,
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: radius,
+              borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: radius,
+              borderSide: const BorderSide(color: AppTheme.error, width: 1.0),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: radius,
+              borderSide: const BorderSide(color: AppTheme.error, width: 1.5),
+            ),
           ),
-      decoration: InputDecoration(
-        labelText: widget.labelText,
-        hintText: widget.hintText,
-        prefixText: widget.prefixText,
-        prefixIcon: widget.prefixIcon,
-        suffixIcon: effectiveSuffixIcon,
-        suffix: widget.suffix,
-        filled: true,
-        fillColor: widget.fillColor ?? AppTheme.surfaceContainerLow,
-        contentPadding: widget.contentPadding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: radius,
-          borderSide: BorderSide.none,
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: radius,
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: radius,
-          borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: radius,
-          borderSide: const BorderSide(color: AppTheme.error, width: 1.0),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: radius,
-          borderSide: const BorderSide(color: AppTheme.error, width: 1.5),
-        ),
-      ),
+      ],
     );
   }
 }

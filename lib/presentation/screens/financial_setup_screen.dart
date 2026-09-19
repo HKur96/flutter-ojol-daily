@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ojol_daily/core/config/enum.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/widgets/custom_text_form_field.dart';
@@ -17,14 +18,12 @@ class FinancialSetupScreen extends StatefulWidget {
 class _ObligationEntry {
   final TextEditingController nameController;
   final TextEditingController amountController;
-  final IconData icon;
-  final Color color;
+  final ObligationDefinitionType type;
 
   _ObligationEntry({
     String name = '',
     String amount = '',
-    this.icon = Icons.payments,
-    this.color = const Color(0xFF006B2C),
+    this.type = ObligationDefinitionType.bulanan,
   }) : nameController = TextEditingController(text: name),
        amountController = TextEditingController(text: amount);
 
@@ -38,56 +37,68 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
   final _targetController = TextEditingController();
   final _workingDaysController = TextEditingController(text: '26');
   final _formKey = GlobalKey<FormState>();
-  bool _isSubmitting = false;
+  final ValueNotifier<bool> _isSubmitting = ValueNotifier<bool>(false);
 
-  final List<_ObligationEntry> _obligations = [
+  final ValueNotifier<List<_ObligationEntry>> _obligations = ValueNotifier([
     _ObligationEntry(
       name: 'Cicilan Motor',
       amount: '',
-      icon: Icons.two_wheeler,
-      color: const Color(0xFF8D4B00),
+      type: ObligationDefinitionType.bulanan,
     ),
     _ObligationEntry(
       name: 'Bensin & Operasional',
       amount: '',
-      icon: Icons.local_gas_station,
-      color: const Color(0xFF006B2C),
+      type: ObligationDefinitionType.bulanan,
     ),
     _ObligationEntry(
       name: 'Kebutuhan Keluarga',
       amount: '',
-      icon: Icons.home,
-      color: const Color(0xFF565E74),
+      type: ObligationDefinitionType.bulanan,
     ),
-  ];
+  ]);
 
   @override
   void dispose() {
     _targetController.dispose();
     _workingDaysController.dispose();
-    for (final ob in _obligations) {
+    for (final ob in _obligations.value) {
       ob.dispose();
     }
+    _obligations.dispose();
+    _isSubmitting.dispose();
     super.dispose();
   }
 
   void _addObligation() {
-    setState(() {
-      _obligations.add(_ObligationEntry());
-    });
+    final currentObligations = _obligations.value;
+    _obligations.value = [...currentObligations, _ObligationEntry()];
   }
 
   void _removeObligation(int index) {
-    setState(() {
-      _obligations[index].dispose();
-      _obligations.removeAt(index);
-    });
+    final currentObligations = _obligations.value;
+    _obligations.value =
+        currentObligations.take(index).toList() +
+        currentObligations.skip(index + 1).toList();
+  }
+
+  void _updateObligationType(int index, ObligationDefinitionType type) {
+    final currentObligations = _obligations.value;
+    final obligation = currentObligations[index];
+    _obligations.value = [
+      ...currentObligations.take(index),
+      _ObligationEntry(
+        name: obligation.nameController.text,
+        amount: obligation.amountController.text,
+        type: type,
+      ),
+      ...currentObligations.skip(index + 1),
+    ];
   }
 
   Future<void> _completeSetup() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isSubmitting = true);
+    _isSubmitting.value = true;
 
     try {
       final provider = context.read<FinancialProvider>();
@@ -108,7 +119,7 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
       }
 
       // Save obligations
-      for (final ob in _obligations) {
+      for (final ob in _obligations.value) {
         final name = ob.nameController.text.trim();
         final amount =
             int.tryParse(
@@ -121,6 +132,7 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
             targetAmount: amount,
             dueDate: DateTime(DateTime.now().year, DateTime.now().month + 1, 1),
             category: 'setup',
+            type: ob.type,
           );
         }
       }
@@ -146,7 +158,7 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
         );
       }
     } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+      _isSubmitting.value = false;
     }
   }
 
@@ -162,27 +174,6 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.two_wheeler,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -213,244 +204,20 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
+                physics: const BouncingScrollPhysics(),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Berapa target narikmu?',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.onSurface,
-                          letterSpacing: -0.3,
-                          height: 1.3,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Isi sesuai kebutuhanmu, bisa diubah kapan saja.',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.onSurfaceVariant,
-                          height: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
                       // ── Section 1: Target ──────────
-                      const SizedBox(height: 10),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.04),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            _buildSectionHeader('Target Pendapatan Bulanan'),
-                            const SizedBox(height: 10),
-                            CustomTextFormField.currency(
-                              controller: _targetController,
-                              labelText: 'Target per bulan',
-                              hintText: 'Contoh: 5.000.000',
-                              
-                              validator: (v) {
-                                if (v == null || v.isEmpty) {
-                                  return 'Masukkan target pendapatan';
-                                }
-                                final amount =
-                                    int.tryParse(
-                                      v.replaceAll('.', '').replaceAll(',', ''),
-                                    ) ??
-                                    0;
-                                if (amount < 100000) {
-                                  return 'Minimal Rp 100.000';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            CustomTextFormField(
-                              controller: _workingDaysController,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              labelText: 'Hari kerja per bulan',
-                              hintText: '26',
-                              suffix: const Text(
-                                'hari',
-                                style: TextStyle(
-                                  color: AppColors.secondary,
-                                ),
-                              ),
-                              validator: (v) {
-                                if (v == null || v.isEmpty) {
-                                  return 'Masukkan hari kerja';
-                                }
-                                final days = int.tryParse(v) ?? 0;
-                                if (days < 1 || days > 31) {
-                                  return 'Antara 1-31 hari';
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 28),
+                      _buildFinancialGoalSetup(),
 
                       // ── Section 2: Kewajiban ───────
-                      _buildSectionHeader('Kewajiban / Alokasi Rutin'),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Pos pengeluaran wajib yang disisihkan setiap hari.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      ...List.generate(_obligations.length, (index) {
-                        final ob = _obligations[index];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.03),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          padding: const EdgeInsets.all(14),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Icon
-                              Container(
-                                width: 36,
-                                height: 36,
-                                margin: const EdgeInsets.only(top: 8),
-                                decoration: BoxDecoration(
-                                  color: ob.color.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Icon(ob.icon, size: 18, color: ob.color),
-                              ),
-                              const SizedBox(width: 12),
-                              // Fields
-                              Expanded(
-                                child: Column(
-                                  children: [
-                                    CustomTextFormField(
-                                      controller: ob.nameController,
-                                      labelText: 'Nama kewajiban',
-                                      hintText: 'Contoh: Cicilan Motor',
-                                      contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 10,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    CustomTextFormField.currency(
-                                      controller: ob.amountController,
-                                      labelText: 'Nominal per bulan',
-                                      hintText: '0',
-                                      contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 10,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // Remove button
-                              if (_obligations.length > 1)
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.close,
-                                    size: 18,
-                                    color: AppColors.error,
-                                  ),
-                                  onPressed: () => _removeObligation(index),
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(
-                                    minWidth: 32,
-                                    minHeight: 32,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        );
-                      }),
-
-                      // Add obligation button
-                      Center(
-                        child: TextButton.icon(
-                          onPressed: _addObligation,
-                          icon: Icon(
-                            Icons.add_circle_outline,
-                            size: 18,
-                            color: AppColors.primary,
-                          ),
-                          label: Text(
-                            'Tambah Kewajiban',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
+                      _buildObligationDefinition(),
 
                       // Info card
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              size: 18,
-                              color: AppColors.primary,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                'Semua data bisa diubah kapan saja di menu Pengaturan. Kewajiban yang kosong nominalnya akan dilewati.',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.onSurfaceVariant,
-                                  height: 1.5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
+                      _buildInfoCard(),
                     ],
                   ),
                 ),
@@ -458,56 +225,61 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
             ),
 
             // Bottom CTA
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, -2),
+            ValueListenableBuilder<bool>(
+              valueListenable: _isSubmitting,
+              builder: (context, isSubmitting, child) {
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, -2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ? null : _completeSetup,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 1,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: isSubmitting ? null : _completeSetup,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 1,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: isSubmitting
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Text(
+                                  'Mulai Pakai Ojol Daily',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                SizedBox(width: 6),
+                                Icon(Icons.arrow_forward, size: 20),
+                              ],
+                            ),
                     ),
                   ),
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2.5,
-                          ),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Text(
-                              'Mulai Pakai Ojol Daily',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            SizedBox(width: 6),
-                            Icon(Icons.arrow_forward, size: 20),
-                          ],
-                        ),
-                ),
-              ),
+                );
+              },
             ),
           ],
         ),
@@ -515,8 +287,9 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Row(
+  Widget _buildSectionHeader(String title, String subtitle) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
@@ -525,6 +298,283 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
             fontWeight: FontWeight.w700,
             color: AppColors.onSurface,
           ),
+        ),
+        Text(
+          subtitle,
+          style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
+  Widget _buildObligationDefinition() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          'Kewajiban / Alokasi Rutin',
+          'Pos pengeluaran wajib yang disisihkan setiap hari.',
+        ),
+
+        ValueListenableBuilder(
+          valueListenable: _obligations,
+          builder: (_, obligations, _) => Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.all(14),
+            child: ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: obligations.length,
+              separatorBuilder: (_, _) => Padding(
+                padding: const EdgeInsets.only(top: 10, bottom: 5),
+                child: Divider(color: Colors.grey.shade400),
+              ),
+              itemBuilder: (_, index) =>
+                  _buildItemObligation(obligations, index),
+            ),
+          ),
+        ),
+
+        // Add obligation button
+        Center(
+          child: TextButton.icon(
+            onPressed: _addObligation,
+            icon: Icon(
+              Icons.add_circle_outline,
+              size: 18,
+              color: AppColors.primary,
+            ),
+            label: Text(
+              'Tambah Kewajiban',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+      ],
+    );
+  }
+
+  Widget _buildInfoCard() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.info_outline, size: 18, color: AppColors.primary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Semua data bisa diubah kapan saja di menu '
+                'Pengaturan. Kewajiban yang kosong nominalnya '
+                'akan dilewati.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.onSurfaceVariant,
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 24),
+    ],
+  );
+
+  Widget _buildFinancialGoalSetup() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildSectionHeader(
+        'Target Pendapatan Bulanan',
+        'Target pendapatan yang ingin kamu capai setiap bulannya.',
+      ),
+      const SizedBox(height: 10),
+      Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            CustomTextFormField.currency(
+              controller: _targetController,
+              labelText: 'Target per bulan',
+              hintText: 'Contoh: 5.000.000',
+
+              validator: (v) {
+                if (v == null || v.isEmpty) {
+                  return 'Masukkan target pendapatan';
+                }
+                final amount =
+                    int.tryParse(v.replaceAll('.', '').replaceAll(',', '')) ??
+                    0;
+                if (amount < 100000) {
+                  return 'Minimal Rp 100.000';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            CustomTextFormField(
+              controller: _workingDaysController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              labelText: 'Hari kerja per bulan',
+              hintText: '26',
+              suffix: const Text(
+                'hari',
+                style: TextStyle(color: AppColors.secondary),
+              ),
+              validator: (v) {
+                if (v == null || v.isEmpty) {
+                  return 'Masukkan hari kerja';
+                }
+                final days = int.tryParse(v) ?? 0;
+                if (days < 1 || days > 31) {
+                  return 'Antara 1-31 hari';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+
+      const SizedBox(height: 28),
+    ],
+  );
+
+  Widget _buildItemObligation(List<_ObligationEntry> obligations, int index) {
+    final ob = obligations[index];
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: CustomTextFormField(
+                controller: ob.nameController,
+                labelText: 'Nama kewajiban',
+                hintText: 'Contoh: Cicilan Motor',
+                textCapitalization: TextCapitalization.words,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return 'Masukkan nama kewajiban';
+                  }
+                  return null;
+                },
+                textInputAction: TextInputAction.next,
+              ),
+            ),
+            // Remove button
+            if (obligations.length > 1)
+              IconButton(
+                icon: Icon(
+                  Icons.delete_outline,
+                  size: 18,
+                  color: AppColors.error,
+                ),
+                onPressed: () => _removeObligation(index),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
+          ],
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          spacing: 10,
+          children: [
+            // Fields
+            Expanded(
+              flex: 3,
+              child: Column(
+                children: [
+                  const SizedBox(height: 8),
+                  CustomTextFormField.currency(
+                    controller: ob.amountController,
+                    labelText: 'Nominal per bulan',
+                    hintText: '0',
+                    textInputAction: TextInputAction.done,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Jenis Kewajiban',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: EdgeInsetsDirectional.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<ObligationDefinitionType>(
+                        value: ob.type,
+                        items: ObligationDefinitionType.values.map((type) {
+                          return DropdownMenuItem(
+                            value: type,
+                            child: Text(type.displayObligation),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value == null) return;
+
+                          _updateObligationType(index, value);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     );
