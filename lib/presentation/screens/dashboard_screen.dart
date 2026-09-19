@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ojol_daily/presentation/screens/expense_screen.dart';
+import 'package:ojol_daily/presentation/screens/income_screen.dart';
+import 'package:ojol_daily/presentation/screens/obligation_screen.dart';
+import 'package:ojol_daily/presentation/screens/target_screen.dart';
 import 'package:provider/provider.dart';
 import '../../domain/enums.dart';
 import '../../domain/financial_state.dart';
@@ -9,9 +13,7 @@ import '../theme/app_theme.dart';
 import '../widgets/quick_input_modal.dart';
 
 class DashboardScreen extends StatefulWidget {
-  final Function(int navIndex) onNavigate;
-
-  const DashboardScreen({super.key, required this.onNavigate});
+  const DashboardScreen({super.key});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -528,46 +530,56 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Expanded(
                         child: _QuickActionButton(
                           icon: Icons.add_circle_outline,
-                          label: "+ Pendapatan",
+                          label: "Pendapatan",
                           color: AppColors.primary,
                           bgColor: AppColors.primaryContainer.withValues(
                             alpha: 0.12,
                           ),
-                          onTap: () => widget.onNavigate(1), // Income tab
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => IncomeScreen()),
+                          ), // Income tab
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: _QuickActionButton(
                           icon: Icons.remove_circle_outline,
-                          label: "- Pengeluaran",
+                          label: "Pengeluaran",
                           color: AppColors.error,
                           bgColor: AppColors.errorContainer.withValues(
                             alpha: 0.4,
                           ),
-                          onTap: () => widget.onNavigate(2), // Expense tab
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => ExpenseScreen()),
+                          ), // Expense tab
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: _QuickActionButton(
-                          icon: Icons.pie_chart_outline,
-                          label: "Alokasikan",
+                          icon: Icons.pie_chart,
+                          label: "Target",
                           color: AppColors.secondary,
                           bgColor: AppColors.secondaryContainer,
-                          onTap: () => widget.onNavigate(3), // Allocation tab
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => TargetScreen()),
+                          ), // Allocation tab
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: _QuickActionButton(
                           icon: Icons.payments_outlined,
-                          label: "Bayar",
+                          label: "Tagihan",
                           color: AppColors.tertiary,
                           bgColor: AppColors.tertiaryContainer.withValues(
                             alpha: 0.2,
                           ),
-                          onTap: () => widget.onNavigate(4), // Obligation tab
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ObligationScreen(),
+                            ),
+                          ), // Obligation tab
                         ),
                       ),
                     ],
@@ -587,7 +599,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(height: 8),
                     _NearestObligationCard(
                       summary: state.obligationSummaries.first,
-                      onNavigate: () => widget.onNavigate(4),
                     ),
                   ],
 
@@ -676,12 +687,8 @@ class _QuickActionButton extends StatelessWidget {
 
 class _NearestObligationCard extends StatelessWidget {
   final ObligationSummary summary;
-  final VoidCallback onNavigate;
 
-  const _NearestObligationCard({
-    required this.summary,
-    required this.onNavigate,
-  });
+  const _NearestObligationCard({required this.summary});
 
   @override
   Widget build(BuildContext context) {

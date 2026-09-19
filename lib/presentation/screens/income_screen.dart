@@ -107,7 +107,6 @@ class IncomeScreen extends StatelessWidget {
           builder: (context, setState) {
             return Padding(
               padding: EdgeInsets.only(
-                top: 20,
                 left: 20,
                 right: 20,
                 bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
@@ -116,6 +115,20 @@ class IncomeScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 6,
+                        width: 80,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.grey.shade400
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 20),
                   const Text("Catat Pendapatan Narik", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(

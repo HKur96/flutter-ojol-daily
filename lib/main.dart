@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:ojol_daily/core/config/enum.dart';
+import 'package:ojol_daily/core/widgets/animated_option_slider.dart';
+import 'package:ojol_daily/domain/enums.dart';
 import 'package:provider/provider.dart';
 import 'presentation/providers/financial_provider.dart';
 import 'presentation/screens/allocation_screen.dart';
 import 'presentation/screens/dashboard_screen.dart';
-import 'presentation/screens/expense_screen.dart';
-import 'presentation/screens/income_screen.dart';
-import 'presentation/screens/obligation_screen.dart';
 import 'presentation/screens/report_screen.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'presentation/screens/splash_decision_screen.dart';
-import 'presentation/screens/target_screen.dart';
 import 'presentation/theme/app_theme.dart';
 
 void main() {
@@ -44,12 +43,6 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  void _navigateTo(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
-
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
@@ -57,27 +50,76 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _onAddPressed() {
-    // Aksi untuk FAB (misalnya, membuka dialog tambah transaksi)
-    print('FAB Pressed!');
+    DailyType dailyType = DailyType.income;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                top: 10,
+                left: 20,
+                right: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 6,
+                        width: 80,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  AnimatedOptionSlider(
+                    onSelectionChanged: (value) {
+                      setState(() {
+                        dailyType = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  if (dailyType == DailyType.income)
+                    _buildIncomeForm(ctx, setState)
+                  else
+                    _buildExpenseForm(ctx, setState),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final screens = [
-      DashboardScreen(onNavigate: _navigateTo),
-      // const IncomeScreen(),
-      // const ExpenseScreen(),
+      const DashboardScreen(),
       const AllocationScreen(),
       const ReportScreen(),
       const SettingsScreen(),
-      // const TargetScreen(),
-      // const ObligationScreen(),
     ];
 
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: screens),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: _onAddPressed,
         backgroundColor: AppTheme.primary,
         elevation: 2.0,
         shape: const CircleBorder(),
@@ -122,41 +164,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           ),
         ),
       ),
-      // bottomNavigationBar: NavigationBar(
-      //   selectedIndex: _currentIndex > 4 ? 0 : _currentIndex,
-      //   onDestinationSelected: (index) {
-      //     setState(() {
-      //       _currentIndex = index;
-      //     });
-      //   },
-      //   destinations: const [
-      //     NavigationDestination(
-      //       icon: Icon(Icons.two_wheeler_outlined),
-      //       selectedIcon: Icon(Icons.two_wheeler, color: AppColors.primary),
-      //       label: 'Home',
-      //     ),
-      //     NavigationDestination(
-      //       icon: Icon(Icons.arrow_downward_outlined),
-      //       selectedIcon: Icon(Icons.arrow_downward, color: AppColors.primary),
-      //       label: 'Pendapatan',
-      //     ),
-      //     NavigationDestination(
-      //       icon: Icon(Icons.arrow_upward_outlined),
-      //       selectedIcon: Icon(Icons.arrow_upward, color: AppColors.error),
-      //       label: 'Pengeluaran',
-      //     ),
-      //     NavigationDestination(
-      //       icon: Icon(Icons.pie_chart_outline),
-      //       selectedIcon: Icon(Icons.pie_chart, color: AppColors.primary),
-      //       label: 'Alokasi',
-      //     ),
-      //     NavigationDestination(
-      //       icon: Icon(Icons.settings),
-      //       selectedIcon: Icon(Icons.settings, color: AppColors.primary),
-      //       label: 'Pengaturan',
-      //     ),
-      //   ],
-      // ),
     );
   }
 
@@ -195,6 +202,165 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildIncomeForm(BuildContext ctx, StateSetter setState) {
+    final amountController = TextEditingController();
+    final noteController = TextEditingController();
+    IncomeSource? selectedSource;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Catat Pendapatan Narik",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 16),
+        DropdownButtonFormField<IncomeSource>(
+          value: selectedSource,
+          decoration: const InputDecoration(labelText: "Aplikasi / Sumber"),
+          items: IncomeSource.values
+              .map(
+                (c) => DropdownMenuItem(
+                  value: c,
+                  child: Text(c.displayIncomeSource),
+                ),
+              )
+              .toList(),
+          onChanged: (val) => setState(() => selectedSource = val!),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: amountController,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: "Nominal (Rp)",
+            prefixText: "Rp ",
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: noteController,
+          decoration: const InputDecoration(labelText: "Catatan (opsional)"),
+        ),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () {
+            final amount =
+                int.tryParse(
+                  amountController.text.replaceAll('.', '').replaceAll(',', ''),
+                ) ??
+                0;
+            if (amount > 0 && selectedSource != null) {
+              Provider.of<FinancialProvider>(context, listen: false).addIncome(
+                amount: amount,
+                category: selectedSource!.displayIncomeSource,
+                note: noteController.text.isNotEmpty
+                    ? noteController.text
+                    : null,
+              );
+              Navigator.pop(ctx);
+            }
+          },
+          child: const Text("Simpan Pendapatan"),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExpenseForm(BuildContext ctx, StateSetter setState) {
+    final amountController = TextEditingController();
+    final noteController = TextEditingController();
+    String selectedCategory = 'Bensin';
+    ExpenseSource selectedSource = ExpenseSource.free;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Catat Pengeluaran",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 16),
+        DropdownButtonFormField<String>(
+          value: selectedCategory,
+          decoration: const InputDecoration(labelText: "Kategori Pengeluaran"),
+          items: [
+            'Bensin',
+            'Makan',
+            'Servis Motor',
+            'Oli',
+            'Tambal Ban',
+            'Keluarga',
+            'Mendadak',
+            'Lainnya',
+          ].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+          onChanged: (val) => setState(() => selectedCategory = val!),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: amountController,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: "Nominal (Rp)",
+            prefixText: "Rp ",
+          ),
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          "Sumber Dana Pengeluaran:",
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 6),
+        SegmentedButton<ExpenseSource>(
+          segments: const [
+            ButtonSegment(value: ExpenseSource.free, label: Text("Uang Bebas")),
+            ButtonSegment(
+              value: ExpenseSource.allocated,
+              label: Text("Uang Alokasi"),
+            ),
+          ],
+          selected: {selectedSource},
+          onSelectionChanged: (set) =>
+              setState(() => selectedSource = set.first),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: noteController,
+          decoration: const InputDecoration(labelText: "Catatan (opsional)"),
+        ),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+          onPressed: () {
+            final amount =
+                int.tryParse(
+                  amountController.text.replaceAll('.', '').replaceAll(',', ''),
+                ) ??
+                0;
+            if (amount > 0) {
+              Provider.of<FinancialProvider>(context, listen: false).addExpense(
+                amount: amount,
+                category: selectedCategory,
+                source: selectedSource,
+                freeAmountUsed: selectedSource == ExpenseSource.free
+                    ? amount
+                    : 0,
+                allocatedAmountUsed: selectedSource == ExpenseSource.allocated
+                    ? amount
+                    : 0,
+                note: noteController.text.isNotEmpty
+                    ? noteController.text
+                    : null,
+              );
+              Navigator.pop(ctx);
+            }
+          },
+          child: const Text("Simpan Pengeluaran"),
+        ),
+      ],
     );
   }
 }
