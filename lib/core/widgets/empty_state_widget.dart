@@ -28,7 +28,7 @@ class EmptyStateWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(imagePath, width: 300),
+          Image.asset(imagePath, width: 200),
           Text(
             title,
             style: Theme.of(
