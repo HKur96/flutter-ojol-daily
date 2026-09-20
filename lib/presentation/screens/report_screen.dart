@@ -57,7 +57,7 @@ class _ReportScreenState extends State<ReportScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(25),
               ),
               child: TabBar(
                 indicatorColor: Colors.transparent,
@@ -65,7 +65,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 indicatorSize: TabBarIndicatorSize.tab,
                 indicator: BoxDecoration(
                   color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(25),
                 ),
                 labelColor: Colors.white,
                 unselectedLabelColor: Colors.grey[700],

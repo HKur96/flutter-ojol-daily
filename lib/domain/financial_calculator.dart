@@ -37,8 +37,9 @@ class FinancialCalculator {
       (sum, item) => sum + item.amount,
     );
 
-    // 3. Cash Available (PRD 16, 31)
-    final rawCash = totalIncome - totalExpense;
+    // 3. Cash Available (PRD 16, 31) — includes startBalance
+    final startBalance = currentTarget?.startBalance ?? 0;
+    final rawCash = startBalance + totalIncome - totalExpense;
     final cashAvailable = rawCash < 0 ? 0 : rawCash;
 
     // Fuel expense calculation for Fuel Ratio (PRD 28)
@@ -196,6 +197,7 @@ class FinancialCalculator {
     return FinancialState(
       totalIncome: totalIncome,
       totalExpense: totalExpense,
+      startBalance: startBalance,
       cashAvailable: cashAvailable,
       totalActiveAllocation: totalActiveAllocation,
       freeCash: freeCash,

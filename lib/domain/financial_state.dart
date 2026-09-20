@@ -56,7 +56,8 @@ class TargetSummary {
 class FinancialState {
   final int totalIncome;
   final int totalExpense;
-  final int cashAvailable; // totalIncome - totalExpense
+  final int startBalance; // Saldo awal bulan
+  final int cashAvailable; // startBalance + totalIncome - totalExpense
   final int totalActiveAllocation; // sum of active allocations
   final int freeCash; // MAX(0, cashAvailable - totalActiveAllocation)
   final int allocationShortfall; // MAX(0, totalActiveAllocation - cashAvailable)
@@ -69,6 +70,7 @@ class FinancialState {
   const FinancialState({
     required this.totalIncome,
     required this.totalExpense,
+    this.startBalance = 0,
     required this.cashAvailable,
     required this.totalActiveAllocation,
     required this.freeCash,
@@ -84,6 +86,7 @@ class FinancialState {
     return const FinancialState(
       totalIncome: 0,
       totalExpense: 0,
+      startBalance: 0,
       cashAvailable: 0,
       totalActiveAllocation: 0,
       freeCash: 0,

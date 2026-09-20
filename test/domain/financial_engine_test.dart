@@ -603,5 +603,64 @@ void main() {
       expect(state.obligationSummaries.first.id, 'ob-listrik'); // Listrik due in 3 days comes first!
       expect(state.obligationSummaries.last.id, 'ob-motor');
     });
+    // 21. Start Balance affects Cash Available and Free Cash
+    test('21. Start Balance is added to Cash Available calculation', () {
+      final target = TargetDefinition(
+        id: 't1',
+        monthlyTargetAmount: 4000000,
+        totalWorkingDays: 26,
+        startBalance: 500000,
+        targetMonth: '2026-09',
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final incomes = [
+        IncomeTransaction(id: '1', amount: 200000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now),
+      ];
+      final expenses = [
+        ExpenseTransaction(
+          id: 'e1',
+          amount: 50000,
+          category: 'Makan',
+          transactionDate: now,
+          source: ExpenseSource.free,
+          freeAmountUsed: 50000,
+          allocatedAmountUsed: 0,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ];
+
+      final state = FinancialCalculator.calculateState(
+        incomeList: incomes,
+        expenseList: expenses,
+        allocationList: [],
+        obligationList: [],
+        paymentList: [],
+        currentTarget: target,
+        todayDate: now,
+      );
+
+      // cashAvailable = startBalance(500k) + income(200k) - expense(50k) = 650k
+      expect(state.startBalance, 500000);
+      expect(state.cashAvailable, 650000);
+      expect(state.freeCash, 650000);
+    });
+
+    // 22. Start Balance defaults to 0 when no target is set
+    test('22. Start Balance defaults to 0 when no currentTarget', () {
+      final state = FinancialCalculator.calculateState(
+        incomeList: [IncomeTransaction(id: '1', amount: 100000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now)],
+        expenseList: [],
+        allocationList: [],
+        obligationList: [],
+        paymentList: [],
+        todayDate: now,
+      );
+
+      expect(state.startBalance, 0);
+      expect(state.cashAvailable, 100000);
+    });
   });
 }

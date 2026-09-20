@@ -320,6 +320,7 @@ class FinancialProvider extends ChangeNotifier {
   Future<void> saveMonthlyTarget({
     required int monthlyTargetAmount,
     required int totalWorkingDays,
+    int startBalance = 0,
   }) async {
     final now = DateTime.now();
     final currentMonthStr = "${now.year}-${now.month.toString().padLeft(2, '0')}";
@@ -327,11 +328,23 @@ class FinancialProvider extends ChangeNotifier {
       id: 'target_$currentMonthStr',
       monthlyTargetAmount: monthlyTargetAmount,
       totalWorkingDays: totalWorkingDays,
+      startBalance: startBalance,
       targetMonth: currentMonthStr,
       createdAt: now,
       updatedAt: now,
     );
     await repository.saveTarget(target);
+    await loadData();
+  }
+
+  /// Update only the startBalance on the current month's target.
+  Future<void> updateStartBalance(int startBalance) async {
+    if (_currentTarget == null) return;
+    final updated = _currentTarget!.copyWith(
+      startBalance: startBalance,
+      updatedAt: DateTime.now(),
+    );
+    await repository.saveTarget(updated);
     await loadData();
   }
 

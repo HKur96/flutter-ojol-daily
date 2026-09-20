@@ -88,10 +88,12 @@ class CustomTextFormField extends StatefulWidget {
     BorderRadius? borderRadius,
     EdgeInsetsGeometry? contentPadding,
     TextInputAction? textInputAction,
+    String? initialValue,
   }) {
     return CustomTextFormField(
       key: key,
       controller: controller,
+      initialValue: initialValue,
       labelText: labelText,
       hintText: hintText,
       prefixIcon: prefixIcon,

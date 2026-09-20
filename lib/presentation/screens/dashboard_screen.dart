@@ -524,70 +524,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   const SizedBox(height: 16),
 
-                  // 3. Quick Actions
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _QuickActionButton(
-                          icon: Icons.add_circle_outline,
-                          label: "Pendapatan",
-                          color: AppColors.primary,
-                          bgColor: AppColors.primaryContainer.withValues(
-                            alpha: 0.12,
-                          ),
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => IncomeScreen()),
-                          ), // Income tab
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _QuickActionButton(
-                          icon: Icons.remove_circle_outline,
-                          label: "Pengeluaran",
-                          color: AppColors.error,
-                          bgColor: AppColors.errorContainer.withValues(
-                            alpha: 0.4,
-                          ),
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => ExpenseScreen()),
-                          ), // Expense tab
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _QuickActionButton(
-                          icon: Icons.pie_chart,
-                          label: "Target",
-                          color: AppColors.secondary,
-                          bgColor: AppColors.secondaryContainer,
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => TargetScreen()),
-                          ), // Allocation tab
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _QuickActionButton(
-                          icon: Icons.payments_outlined,
-                          label: "Tagihan",
-                          color: AppColors.tertiary,
-                          bgColor: AppColors.tertiaryContainer.withValues(
-                            alpha: 0.2,
-                          ),
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => ObligationScreen(),
-                            ),
-                          ), // Obligation tab
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // 4. Nearest Obligation Card
+                  // 3. Nearest Obligation Card
                   if (state.obligationSummaries.isNotEmpty) ...[
                     const Text(
                       "Kewajiban Terdekat",
@@ -634,53 +571,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
             ),
-    );
-  }
-}
-
-class _QuickActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final Color bgColor;
-  final VoidCallback onTap;
-
-  const _QuickActionButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.bgColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.surfaceContainerHigh),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
-              child: Icon(icon, color: color, size: 20),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

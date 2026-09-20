@@ -401,6 +401,7 @@ class TargetDefinition {
   final String id;
   final int monthlyTargetAmount;
   final int totalWorkingDays; // Days planned for work e.g. 26
+  final int startBalance; // Saldo awal bulan (IDR)
   final String targetMonth; // Format "YYYY-MM"
   final TargetStatus status;
   final DateTime createdAt;
@@ -410,6 +411,7 @@ class TargetDefinition {
     required this.id,
     required this.monthlyTargetAmount,
     required this.totalWorkingDays,
+    this.startBalance = 0,
     required this.targetMonth,
     this.status = TargetStatus.inProgress,
     required this.createdAt,
@@ -421,6 +423,7 @@ class TargetDefinition {
       'id': id,
       'monthlyTargetAmount': monthlyTargetAmount,
       'totalWorkingDays': totalWorkingDays,
+      'startBalance': startBalance,
       'targetMonth': targetMonth,
       'status': status.name,
       'createdAt': createdAt.toIso8601String(),
@@ -433,6 +436,7 @@ class TargetDefinition {
       id: map['id'] as String,
       monthlyTargetAmount: (map['monthlyTargetAmount'] as num).toInt(),
       totalWorkingDays: (map['totalWorkingDays'] as num).toInt(),
+      startBalance: (map['startBalance'] as num?)?.toInt() ?? 0,
       targetMonth: map['targetMonth'] as String,
       status: TargetStatus.values.byName(map['status'] as String),
       createdAt: DateTime.parse(map['createdAt'] as String),
@@ -444,6 +448,7 @@ class TargetDefinition {
     String? id,
     int? monthlyTargetAmount,
     int? totalWorkingDays,
+    int? startBalance,
     String? targetMonth,
     TargetStatus? status,
     DateTime? createdAt,
@@ -453,6 +458,7 @@ class TargetDefinition {
       id: id ?? this.id,
       monthlyTargetAmount: monthlyTargetAmount ?? this.monthlyTargetAmount,
       totalWorkingDays: totalWorkingDays ?? this.totalWorkingDays,
+      startBalance: startBalance ?? this.startBalance,
       targetMonth: targetMonth ?? this.targetMonth,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,

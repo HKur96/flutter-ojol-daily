@@ -6,7 +6,7 @@ import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
   static const String _dbName = 'ojol_daily.db';
-  static const int _dbVersion = 2;
+  static const int _dbVersion = 3;
 
   static Database? _database;
   final Database? customDatabase;
@@ -115,6 +115,7 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         monthlyTargetAmount INTEGER NOT NULL,
         totalWorkingDays INTEGER NOT NULL,
+        startBalance INTEGER NOT NULL DEFAULT 0,
         targetMonth TEXT NOT NULL,
         status TEXT NOT NULL,
         createdAt TEXT NOT NULL,
@@ -160,6 +161,11 @@ class DatabaseHelper {
     if (oldVersion < 2) {
       try {
         await db.execute("ALTER TABLE obligation_definitions ADD COLUMN type TEXT NOT NULL DEFAULT 'bulanan'");
+      } catch (_) {}
+    }
+    if (oldVersion < 3) {
+      try {
+        await db.execute("ALTER TABLE target_definitions ADD COLUMN startBalance INTEGER NOT NULL DEFAULT 0");
       } catch (_) {}
     }
   }

@@ -41,6 +41,7 @@ class _ObligationEntry {
 class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
   final _targetController = TextEditingController();
   final _workingDaysController = TextEditingController(text: '26');
+  final _startBalance = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final ValueNotifier<bool> _isSubmitting = ValueNotifier<bool>(false);
 
@@ -74,6 +75,7 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
   void dispose() {
     _targetController.dispose();
     _workingDaysController.dispose();
+    _startBalance.dispose();
     for (final ob in _obligations.value) {
       ob.dispose();
     }
@@ -177,7 +179,9 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
           {'Sabtu': workDays.contains(6)},
           {'Minggu': workDays.contains(7)},
         ];
-        final activeCount = _weekDays.value.where((day) => day.values.first).length;
+        final activeCount = _weekDays.value
+            .where((day) => day.values.first)
+            .length;
         if (activeCount > 0) {
           _workingDaysController.text = (activeCount * 4).toString();
         }
@@ -204,8 +208,9 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     // validate weekdays should be at least 1
-    final isWorkingDaysSelected =
-        _weekDays.value.any((day) => day.values.first);
+    final isWorkingDaysSelected = _weekDays.value.any(
+      (day) => day.values.first,
+    );
     if (!isWorkingDaysSelected) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Pilih setidaknya 1 hari kerja')),
@@ -239,11 +244,17 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
           ) ??
           0;
       final workingDays = int.tryParse(_workingDaysController.text) ?? 26;
+      final startBalance =
+          int.tryParse(
+            _startBalance.text.replaceAll('.', '').replaceAll(',', ''),
+          ) ??
+          0;
 
       if (targetAmount > 0) {
         await provider.saveMonthlyTarget(
           monthlyTargetAmount: targetAmount,
           totalWorkingDays: workingDays,
+          startBalance: startBalance,
         );
       }
 
@@ -583,7 +594,7 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
             CustomTextFormField(
               controller: _workingDaysController,
               keyboardType: TextInputType.number,
-              textInputAction: TextInputAction.done,
+              textInputAction: TextInputAction.next,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               labelText: 'Hari kerja per bulan',
               hintText: '26',
@@ -599,6 +610,20 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
                 if (days < 1 || days > 31) {
                   return 'Antara 1-31 hari';
                 }
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            CustomTextFormField.currency(
+              controller: _startBalance,
+              labelText: 'Saldo awal',
+              hintText: 'Contoh: 10.000.000',
+              textInputAction: TextInputAction.done,
+              validator: (v) {
+                if (v == null || v.isEmpty) {
+                  return 'Masukkan saldo awal';
+                }
+
                 return null;
               },
             ),
