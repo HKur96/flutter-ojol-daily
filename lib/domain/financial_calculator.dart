@@ -72,6 +72,8 @@ class FinancialCalculator {
     final obligationSummaries = <ObligationSummary>[];
 
     for (final ob in obligationList) {
+      if (ob.isCancelled) continue;
+
       // Sum allocations for this obligation
       final obAllocations = activeAllocations.where(
         (a) => a.obligationId == ob.id,

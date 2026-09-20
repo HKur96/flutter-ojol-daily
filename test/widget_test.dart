@@ -9,7 +9,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(const OjolDailyApp());
     expect(find.text('Ojol Daily'), findsOneWidget);
-    await tester.pump(const Duration(milliseconds: 700));
-    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 3000));
+    await tester.pumpAndSettle();
   });
 }

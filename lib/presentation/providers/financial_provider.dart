@@ -86,6 +86,24 @@ class FinancialProvider extends ChangeNotifier {
       _payments = await repository.getAllObligationPayments();
       _dayActivities = await repository.getAllDayActivities();
 
+      // Auto-complete obligations that have been fully paid
+      for (final ob in _obligations) {
+        if (!ob.isCancelled && ob.targetAmount > 0) {
+          final obPayments = _payments.where(
+            (p) =>
+                p.obligationId == ob.id &&
+                p.status == TransactionStatus.active,
+          );
+          final paidTotal = obPayments.fold<int>(0, (sum, p) => sum + p.amount);
+          if (paidTotal >= ob.targetAmount) {
+            await repository.updateObligation(
+              ob.copyWith(isCancelled: true, updatedAt: DateTime.now()),
+            );
+          }
+        }
+      }
+      _obligations = await repository.getAllObligations();
+
       final currentMonthStr =
           "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}";
       _currentTarget = await repository.getTargetForMonth(currentMonthStr);
@@ -338,6 +356,20 @@ class FinancialProvider extends ChangeNotifier {
       updatedAt: now,
     );
     await repository.insertObligationPayment(payment);
+
+    // If payment completes the obligation (paidAmount + amount >= targetAmount),
+    // mark obligation as completed/cancelled to remove from active list while preserving payment history in DB.
+    if (obSummary.paidAmount + amount >= obSummary.targetAmount) {
+      final obDefIndex = _obligations.indexWhere((o) => o.id == obligationId);
+      if (obDefIndex != -1) {
+        final updatedOb = _obligations[obDefIndex].copyWith(
+          isCancelled: true,
+          updatedAt: now,
+        );
+        await repository.updateObligation(updatedOb);
+      }
+    }
+
     await loadData();
     return true;
   }

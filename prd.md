@@ -2,7 +2,7 @@
 
 ## Aplikasi Keuangan untuk Ojol
 
-**Versi:** 1.2
+**Versi:** 1.3
 **Platform:** Flutter / Mobile
 **Arsitektur:** Offline-first
 **Target pengguna:** Driver ojol / pekerja dengan pendapatan tidak tetap
@@ -55,7 +55,8 @@ Contoh:
 ### Aturan
 
 * `WORKING` dapat ditentukan otomatis ketika terdapat pendapatan pada tanggal tersebut.
-* `OFF` dapat ditentukan berdasarkan konfigurasi hari libur atau input user.
+* `OFF` dapat ditentukan berdasarkan konfigurasi hari libur (`ReminderSettings.workDays`), input user, atau jika `weekday` hari ini tidak tercantum di `workDays`.
+* Jika belum ada catatan aktivitas manual di database untuk tanggal hari ini, status hari mengacu pada `workDays`. Jika `weekday` hari ini tidak tercantum di `workDays`, status otomatis dievaluasi sebagai `OFF`.
 * `NO_DATA` digunakan untuk tanggal masa lalu/masa kini yang belum memiliki informasi aktivitas.
 * Hari `OFF` tidak menghasilkan pendapatan Rp0 secara otomatis.
 * Hari `OFF` tidak masuk denominator target hari narik.
@@ -250,6 +251,11 @@ paidAmount = Rp500.000
 Maka:
 
 > `PAID`
+
+**Aturan Auto-Archiving Kewajiban Lunas:**
+* Ketika transaksi pembayaran kewajiban (`ObligationPayment`) menyebabkan total pembayaran mencapai/melebihi target (`paidAmount >= targetAmount`), kewajiban tersebut otomatis ditandai sebagai selesai/diarsipkan (`isCancelled = true`).
+* Kewajiban yang sudah `PAID` langsung dihilangkan dari daftar kewajiban aktif (seperti layar Alokasi dan kartu Kewajiban Terdekat di Beranda) tanpa harus menunggu tanggal jatuh tempo (`dueDate`).
+* Seluruh transaksi pembayaran historis (`ObligationPayment`) tetap disimpan utuh pada database SQLite dan ditampilkan pada Laporan & Log Aktivitas.
 
 Jika:
 
