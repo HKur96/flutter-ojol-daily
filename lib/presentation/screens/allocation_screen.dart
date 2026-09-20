@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:ojol_daily/core/config/enum.dart';
 import 'package:ojol_daily/core/config/extension.dart';
 import 'package:ojol_daily/core/utils/currency_formatter.dart';
+import 'package:ojol_daily/core/utils/currency_input_formatter.dart';
 import 'package:ojol_daily/core/widgets/custom_text_form_field.dart';
 import 'package:ojol_daily/core/widgets/empty_state_widget.dart';
 import 'package:ojol_daily/domain/enums.dart';
+import 'package:ojol_daily/domain/financial_state.dart';
 import 'package:ojol_daily/domain/models.dart';
 import 'package:provider/provider.dart';
 import '../providers/financial_provider.dart';
@@ -157,18 +160,29 @@ class AllocationScreen extends StatelessWidget {
                                                     AppColors.onSurfaceVariant,
                                               ),
                                               onSelected: (value) {
-                                                if (value == 'edit') {
-                                                  _showAddEditObligationDialog(
-                                                    context,
-                                                    provider,
-                                                    ob,
-                                                  );
-                                                } else if (value == 'delete') {
-                                                  _showDeleteObligationConfirm(
-                                                    context,
-                                                    provider,
-                                                    ob,
-                                                  );
+                                                switch (value) {
+                                                  case 'edit':
+                                                    _showAddEditObligationDialog(
+                                                      context,
+                                                      provider,
+                                                      ob,
+                                                    );
+                                                    break;
+                                                  case 'pay':
+                                                    // TODO: INTEGRATE WITH PAY OBLIGATION
+                                                    _showPayObligationDialog(
+                                                      context,
+                                                      provider,
+                                                      ob,
+                                                    );
+                                                    break;
+                                                  default:
+                                                    _showDeleteObligationConfirm(
+                                                      context,
+                                                      provider,
+                                                      ob,
+                                                    );
+                                                    break;
                                                 }
                                               },
                                               itemBuilder: (ctx) => [
@@ -204,6 +218,28 @@ class AllocationScreen extends StatelessWidget {
                                                     ],
                                                   ),
                                                 ),
+                                                if (ob.allocationProgressPercent ==
+                                                    100)
+                                                  const PopupMenuItem(
+                                                    value: 'pay',
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.payment,
+                                                          color:
+                                                              AppColors.primary,
+                                                        ),
+                                                        SizedBox(width: 8),
+                                                        Text(
+                                                          'Bayar',
+                                                          style: TextStyle(
+                                                            color: AppColors
+                                                                .primary,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
                                               ],
                                             ),
                                           ],
@@ -514,6 +550,98 @@ class AllocationScreen extends StatelessWidget {
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  void _showPayObligationDialog(
+    BuildContext context,
+    FinancialProvider provider,
+    ObligationSummary ob,
+  ) {
+    final remaining = ob.remainingAmount;
+
+    if (remaining == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Kewajiban ini sudah lunas!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+      return;
+    }
+
+    final amountController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text("Bayar Kewajiban: ${ob.name}"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Sisa yang harus dibayar: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ').format(remaining)}",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              CustomTextFormField(
+                controller: amountController,
+                labelText: "Jumlah Pembayaran",
+                hintText: "Masukkan jumlah pembayaran",
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  CurrencyInputFormatter(),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text("Batal"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                final amount = int.tryParse(
+                  amountController.text.replaceAll('.', '').replaceAll(',', ''),
+                );
+                if (amount != null && amount > 0 && amount <= remaining) {
+                  await provider.payObligation(
+                    obligationId: ob.id,
+                    amount: amount,
+                    note: "Pembayaran cicilan",
+                  );
+                  if (ctx.mounted) {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          "Pembayaran sebesar ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ').format(amount)} berhasil ditambahkan",
+                        ),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text(
+                "Bayar",
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
         );
       },
     );
