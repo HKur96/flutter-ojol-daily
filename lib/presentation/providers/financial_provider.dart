@@ -53,6 +53,17 @@ class FinancialProvider extends ChangeNotifier {
         .fold<int>(0, (sum, i) => sum + i.amount);
   }
 
+  int get expenseTodayAmount {
+    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    return _expenses
+        .where(
+          (e) =>
+              e.status == TransactionStatus.active &&
+              DateFormat('yyyy-MM-dd').format(e.transactionDate) == todayStr,
+        )
+        .fold<int>(0, (sum, e) => sum + e.amount);
+  }
+
   DayStatus get todayDayStatus {
     final now = DateTime.now();
     final todayStr = DateFormat('yyyy-MM-dd').format(now);
@@ -91,8 +102,7 @@ class FinancialProvider extends ChangeNotifier {
         if (!ob.isCancelled && ob.targetAmount > 0) {
           final obPayments = _payments.where(
             (p) =>
-                p.obligationId == ob.id &&
-                p.status == TransactionStatus.active,
+                p.obligationId == ob.id && p.status == TransactionStatus.active,
           );
           final paidTotal = obPayments.fold<int>(0, (sum, p) => sum + p.amount);
           if (paidTotal >= ob.targetAmount) {
