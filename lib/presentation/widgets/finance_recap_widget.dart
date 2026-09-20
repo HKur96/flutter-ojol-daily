@@ -14,7 +14,7 @@ class FinanceRecapWidget extends StatelessWidget {
         final state = provider.state;
         return ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           children: [
             Card(
               elevation: 1,

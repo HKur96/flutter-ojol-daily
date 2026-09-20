@@ -3,7 +3,7 @@ import 'package:ojol_daily/core/theme/app_theme.dart';
 import 'package:ojol_daily/presentation/widgets/finance_history_widget.dart';
 import 'package:ojol_daily/presentation/widgets/finance_recap_widget.dart';
 
-enum ActivityType { income, expense, obligationPayment }
+enum ActivityType { income, expense, obligationPayment, allocation }
 
 enum ActivityPeriodFilter {
   today('Hari Ini'),

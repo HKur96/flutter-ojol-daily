@@ -31,7 +31,7 @@ class _FinanceHistoryWidgetState extends State<FinanceHistoryWidget> {
         final filteredActivities = _getFilteredActivities(allActivities);
 
         return Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: Column(
             children: [
               // Row(
@@ -196,6 +196,36 @@ class _FinanceHistoryWidgetState extends State<FinanceHistoryWidget> {
           date: pay.paymentDate,
           type: ActivityType.obligationPayment,
           note: pay.note,
+        ),
+      );
+    }
+
+    // 4. Allocations
+    for (final alloc in provider.allocations) {
+      final obName = provider.obligations
+          .firstWhere(
+            (o) => o.id == alloc.obligationId,
+            orElse: () => ObligationDefinition(
+              id: '',
+              name: 'Kewajiban',
+              targetAmount: 0,
+              dueDate: DateTime.now(),
+              category: '',
+              type: ObligationDefinitionType.bulanan,
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            ),
+          )
+          .name;
+      items.add(
+        ActivityLogItem(
+          id: alloc.id,
+          title: 'Alokasi',
+          categoryOrSubtitle: 'Alokasi $obName',
+          amount: alloc.amount,
+          date: alloc.createdAt,
+          type: ActivityType.allocation,
+          note: alloc.note,
         ),
       );
     }
@@ -381,6 +411,13 @@ class _FinanceHistoryWidgetState extends State<FinanceHistoryWidget> {
         iconColor = AppColors.primary;
         sign = '-';
         amountColor = AppColors.primary;
+        break;
+      case ActivityType.allocation:
+        iconData = Icons.account_balance_wallet_outlined;
+        iconBgColor = AppColors.tertiary.withValues(alpha: 0.1);
+        iconColor = AppColors.tertiary;
+        sign = '-';
+        amountColor = AppColors.tertiary;
         break;
     }
 
