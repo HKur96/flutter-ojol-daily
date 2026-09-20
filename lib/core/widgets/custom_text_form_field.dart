@@ -268,6 +268,11 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
               FocusManager.instance.primaryFocus?.unfocus(),
           decoration: InputDecoration(
             hintText: widget.hintText,
+            hintStyle: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
+            ),
             prefixIcon: effectivePrefixIcon,
             prefixIconConstraints: effectivePrefixConstraints,
             suffixIcon: effectiveSuffixIcon,

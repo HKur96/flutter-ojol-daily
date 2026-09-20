@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../core/widgets/custom_text_form_field.dart';
 import '../../domain/enums.dart';
 import '../../domain/models.dart';
 import '../providers/financial_provider.dart';
@@ -202,10 +203,9 @@ class ExpenseScreen extends StatelessWidget {
                     onChanged: (val) => setState(() => selectedCategory = val!),
                   ),
                   const SizedBox(height: 12),
-                  TextField(
+                  CustomTextFormField.currency(
                     controller: amountController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: "Nominal (Rp)", prefixText: "Rp "),
+                    labelText: "Nominal (Rp)",
                   ),
                   const SizedBox(height: 12),
                   const Text("Sumber Dana Pengeluaran:", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
@@ -219,9 +219,10 @@ class ExpenseScreen extends StatelessWidget {
                     onSelectionChanged: (set) => setState(() => selectedSource = set.first),
                   ),
                   const SizedBox(height: 12),
-                  TextField(
+                  CustomTextFormField(
                     controller: noteController,
-                    decoration: const InputDecoration(labelText: "Catatan (opsional)"),
+                    labelText: "Catatan (opsional)",
+                    hintText: "Catatan (opsional)",
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(

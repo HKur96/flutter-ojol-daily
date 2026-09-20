@@ -103,7 +103,7 @@ class _FinanceHistoryWidgetState extends State<FinanceHistoryWidget> {
                   physics: const BouncingScrollPhysics(),
                   child: (filteredActivities.isEmpty)
                       ? EmptyStateWidget(
-                          imagePath: 'empty_allocation'.image,
+                          imagePath: 'empty_report'.image,
                           title: 'Belum Ada Aktivitas',
                           subtitle:
                               "Belum ada catatan transaksi pada periode yang dipilih.",

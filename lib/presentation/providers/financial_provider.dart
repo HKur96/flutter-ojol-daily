@@ -257,6 +257,34 @@ class FinancialProvider extends ChangeNotifier {
     await loadData();
   }
 
+  Future<void> updateObligation({
+    required String id,
+    required String name,
+    required int targetAmount,
+    required DateTime dueDate,
+    required String category,
+    required ObligationDefinitionType type,
+  }) async {
+    final index = _obligations.indexWhere((o) => o.id == id);
+    if (index != -1) {
+      final updated = _obligations[index].copyWith(
+        name: name,
+        targetAmount: targetAmount,
+        dueDate: dueDate,
+        category: category,
+        type: type,
+        updatedAt: DateTime.now(),
+      );
+      await repository.updateObligation(updated);
+      await loadData();
+    }
+  }
+
+  Future<void> deleteObligation(String id) async {
+    await repository.deleteObligation(id);
+    await loadData();
+  }
+
   Future<bool> payObligation({
     required String obligationId,
     required int amount,

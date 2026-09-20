@@ -11,6 +11,7 @@ import 'presentation/screens/report_screen.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'presentation/screens/splash_decision_screen.dart';
 import 'presentation/theme/app_theme.dart';
+import 'core/widgets/custom_text_form_field.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,10 +33,7 @@ class OjolDailyApp extends StatelessWidget {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        supportedLocales: const [
-          Locale('id', 'ID'),
-          Locale('en', 'US'),
-        ],
+        supportedLocales: const [Locale('id', 'ID'), Locale('en', 'US')],
         locale: const Locale('id', 'ID'),
         theme: AppTheme.lightTheme,
         home: const SplashDecisionScreen(),
@@ -243,18 +241,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           onChanged: (val) => setState(() => selectedSource = val!),
         ),
         const SizedBox(height: 12),
-        TextField(
+        CustomTextFormField.currency(
           controller: amountController,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: "Nominal (Rp)",
-            prefixText: "Rp ",
-          ),
+          labelText: "Nominal (Rp)",
         ),
         const SizedBox(height: 12),
-        TextField(
+        CustomTextFormField(
           controller: noteController,
-          decoration: const InputDecoration(labelText: "Catatan (opsional)"),
+          labelText: "Catatan (opsional)",
+          hintText: "Catatan (opsional)",
         ),
         const SizedBox(height: 20),
         ElevatedButton(
@@ -311,18 +306,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           onChanged: (val) => setState(() => selectedCategory = val!),
         ),
         const SizedBox(height: 12),
-        TextField(
+        CustomTextFormField.currency(
           controller: amountController,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: "Nominal (Rp)",
-            prefixText: "Rp ",
-          ),
+          labelText: "Nominal (Rp)",
         ),
         const SizedBox(height: 12),
         const Text(
           "Sumber Dana Pengeluaran:",
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 6),
         SegmentedButton<ExpenseSource>(
@@ -338,9 +329,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               setState(() => selectedSource = set.first),
         ),
         const SizedBox(height: 12),
-        TextField(
+        CustomTextFormField(
           controller: noteController,
-          decoration: const InputDecoration(labelText: "Catatan (opsional)"),
+          labelText: "Catatan (opsional)",
+          hintText: "Catatan (opsional)",
         ),
         const SizedBox(height: 20),
         ElevatedButton(

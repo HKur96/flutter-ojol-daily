@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../core/widgets/custom_text_form_field.dart';
 import '../../domain/enums.dart';
 import '../../domain/models.dart';
 import '../providers/financial_provider.dart';
@@ -166,16 +167,16 @@ class TargetScreen extends StatelessWidget {
             children: [
               const Text("Setup Target Pendapatan Bulanan", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
               const SizedBox(height: 16),
-              TextField(
+              CustomTextFormField.currency(
                 controller: targetController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Target Pendapatan Bulan Ini (Rp)", prefixText: "Rp "),
+                labelText: "Target Pendapatan Bulan Ini (Rp)",
               ),
               const SizedBox(height: 12),
-              TextField(
+              CustomTextFormField(
                 controller: daysController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Rencana Jumlah Hari Narik (misal: 26)"),
+                labelText: "Rencana Jumlah Hari Narik",
+                hintText: "26",
               ),
               const SizedBox(height: 20),
               ElevatedButton(

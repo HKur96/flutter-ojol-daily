@@ -13,7 +13,10 @@ class FinancialRepository {
   // --- Income Transactions ---
   Future<List<IncomeTransaction>> getAllIncomes() async {
     final db = await dbHelper.database;
-    final maps = await db.query('income_transactions', orderBy: 'transactionDate DESC');
+    final maps = await db.query(
+      'income_transactions',
+      orderBy: 'transactionDate DESC',
+    );
     return maps.map((m) => IncomeTransaction.fromMap(m)).toList();
   }
 
@@ -34,17 +37,16 @@ class FinancialRepository {
 
   Future<void> deleteIncome(String id) async {
     final db = await dbHelper.database;
-    await db.delete(
-      'income_transactions',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.delete('income_transactions', where: 'id = ?', whereArgs: [id]);
   }
 
   // --- Expense Transactions ---
   Future<List<ExpenseTransaction>> getAllExpenses() async {
     final db = await dbHelper.database;
-    final maps = await db.query('expense_transactions', orderBy: 'transactionDate DESC');
+    final maps = await db.query(
+      'expense_transactions',
+      orderBy: 'transactionDate DESC',
+    );
     return maps.map((m) => ExpenseTransaction.fromMap(m)).toList();
   }
 
@@ -65,17 +67,16 @@ class FinancialRepository {
 
   Future<void> deleteExpense(String id) async {
     final db = await dbHelper.database;
-    await db.delete(
-      'expense_transactions',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.delete('expense_transactions', where: 'id = ?', whereArgs: [id]);
   }
 
   // --- Allocation Transactions ---
   Future<List<AllocationTransaction>> getAllAllocations() async {
     final db = await dbHelper.database;
-    final maps = await db.query('allocation_transactions', orderBy: 'allocationDate DESC');
+    final maps = await db.query(
+      'allocation_transactions',
+      orderBy: 'allocationDate DESC',
+    );
     return maps.map((m) => AllocationTransaction.fromMap(m)).toList();
   }
 
@@ -97,7 +98,10 @@ class FinancialRepository {
   // --- Obligation Definitions ---
   Future<List<ObligationDefinition>> getAllObligations() async {
     final db = await dbHelper.database;
-    final maps = await db.query('obligation_definitions', orderBy: 'dueDate ASC');
+    final maps = await db.query(
+      'obligation_definitions',
+      orderBy: 'dueDate ASC',
+    );
     return maps.map((m) => ObligationDefinition.fromMap(m)).toList();
   }
 
@@ -116,10 +120,22 @@ class FinancialRepository {
     );
   }
 
+  Future<void> deleteObligation(String id) async {
+    final db = await dbHelper.database;
+    await db.delete(
+      'obligation_definitions',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   // --- Obligation Payments ---
   Future<List<ObligationPayment>> getAllObligationPayments() async {
     final db = await dbHelper.database;
-    final maps = await db.query('obligation_payments', orderBy: 'paymentDate DESC');
+    final maps = await db.query(
+      'obligation_payments',
+      orderBy: 'paymentDate DESC',
+    );
     return maps.map((m) => ObligationPayment.fromMap(m)).toList();
   }
 
@@ -158,10 +174,13 @@ class FinancialRepository {
 
   Future<void> setDayActivity(DayActivity dayActivity) async {
     final db = await dbHelper.database;
-    await db.rawInsert('''
+    await db.rawInsert(
+      '''
       INSERT OR REPLACE INTO day_activities (dateString, status, note)
       VALUES (?, ?, ?)
-    ''', [dayActivity.dateString, dayActivity.status.name, dayActivity.note]);
+    ''',
+      [dayActivity.dateString, dayActivity.status.name, dayActivity.note],
+    );
   }
 
   // --- Reminder Settings & Logs ---
@@ -179,18 +198,30 @@ class FinancialRepository {
   Future<void> saveReminderSettings(ReminderSettings settings) async {
     final db = await dbHelper.database;
     final map = settings.toMap()..['id'] = 1;
-    await db.insert('reminder_settings', map, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      'reminder_settings',
+      map,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<ReminderLog?> getReminderLog(String dateString) async {
     final db = await dbHelper.database;
-    final maps = await db.query('reminder_logs', where: 'dateString = ?', whereArgs: [dateString]);
+    final maps = await db.query(
+      'reminder_logs',
+      where: 'dateString = ?',
+      whereArgs: [dateString],
+    );
     if (maps.isEmpty) return null;
     return ReminderLog.fromMap(maps.first);
   }
 
   Future<void> saveReminderLog(ReminderLog log) async {
     final db = await dbHelper.database;
-    await db.insert('reminder_logs', log.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      'reminder_logs',
+      log.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 }

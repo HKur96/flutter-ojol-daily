@@ -10,10 +10,10 @@ class CurrencyFormatter {
   );
 
   /// Full format: Rp4.250.000
-  static String format(double amount) => _full.format(amount);
+  static String format(num amount) => _full.format(amount);
 
   /// Abbreviated format: Rp4,25 jt / Rp680 rb
-  static String abbreviated(double amount) {
+  static String abbreviated(num amount) {
     if (amount >= 1000000) {
       final jt = amount / 1000000;
       final formatted = jt == jt.roundToDouble()
