@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ojol_daily/core/config/enum.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/database_helper.dart';
 import '../../data/repositories.dart';
 import '../../domain/enums.dart';
@@ -314,6 +315,8 @@ class FinancialProvider extends ChangeNotifier {
 
   Future<void> clearAllData() async {
     await repository.dbHelper.clearAllData();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('financial_setup_completed', false);
     await loadData();
   }
 }

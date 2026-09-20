@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ojol_daily/core/config/enum.dart';
+import 'package:ojol_daily/core/utils/date_formatter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/widgets/custom_text_form_field.dart';
@@ -19,17 +20,21 @@ class _ObligationEntry {
   final TextEditingController nameController;
   final TextEditingController amountController;
   final ObligationDefinitionType type;
+  final TextEditingController dueDateController;
 
   _ObligationEntry({
     String name = '',
     String amount = '',
     this.type = ObligationDefinitionType.bulanan,
+    String dueDate = '',
   }) : nameController = TextEditingController(text: name),
-       amountController = TextEditingController(text: amount);
+       amountController = TextEditingController(text: amount),
+       dueDateController = TextEditingController(text: dueDate);
 
   void dispose() {
     nameController.dispose();
     amountController.dispose();
+    dueDateController.dispose();
   }
 }
 
@@ -44,18 +49,26 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
       name: 'Cicilan Motor',
       amount: '',
       type: ObligationDefinitionType.bulanan,
-    ),
-    _ObligationEntry(
-      name: 'Bensin & Operasional',
-      amount: '',
-      type: ObligationDefinitionType.bulanan,
+      dueDate: '',
     ),
     _ObligationEntry(
       name: 'Kebutuhan Keluarga',
       amount: '',
       type: ObligationDefinitionType.bulanan,
+      dueDate: '',
     ),
   ]);
+
+  final ValueNotifier<List<Map<String, bool>>> _weekDays =
+      ValueNotifier<List<Map<String, bool>>>([
+        {'Senin': false},
+        {'Selasa': false},
+        {'Rabu': false},
+        {'Kamis': false},
+        {'Jumat': false},
+        {'Sabtu': false},
+        {'Minggu': false},
+      ]);
 
   @override
   void dispose() {
@@ -66,6 +79,7 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
     }
     _obligations.dispose();
     _isSubmitting.dispose();
+    _weekDays.dispose();
     super.dispose();
   }
 
@@ -95,13 +109,128 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
     ];
   }
 
+  void _updateObligationDueDate(int index, TextEditingController controller) {
+    final currentObligations = _obligations.value;
+    final obligation = currentObligations[index];
+    _obligations.value = [
+      ...currentObligations.take(index),
+      _ObligationEntry(
+        name: obligation.nameController.text,
+        amount: obligation.amountController.text,
+        type: obligation.type,
+        dueDate: controller.text,
+      ),
+      ...currentObligations.skip(index + 1),
+    ];
+  }
+
+  Future<DateTime?> _selectDate(
+    int index,
+    TextEditingController controller,
+  ) async {
+    final now = DateTime.now();
+    final DateTime initialDate = now;
+    final DateTime firstDate = now;
+    final DateTime lastDate = DateTime(2030);
+
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      locale: const Locale('id', 'ID'),
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedDate != null) {
+      controller.text = DateFormatter.fullDate(pickedDate);
+    }
+
+    return pickedDate;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final provider = context.read<FinancialProvider>();
+      final workDays = provider.reminderSettings.workDays;
+      if (workDays.isNotEmpty) {
+        _weekDays.value = [
+          {'Senin': workDays.contains(1)},
+          {'Selasa': workDays.contains(2)},
+          {'Rabu': workDays.contains(3)},
+          {'Kamis': workDays.contains(4)},
+          {'Jumat': workDays.contains(5)},
+          {'Sabtu': workDays.contains(6)},
+          {'Minggu': workDays.contains(7)},
+        ];
+        final activeCount = _weekDays.value.where((day) => day.values.first).length;
+        if (activeCount > 0) {
+          _workingDaysController.text = (activeCount * 4).toString();
+        }
+      }
+    });
+  }
+
+  void _updateWorkingDays(int index, bool value) {
+    final currentWorkingDays = _weekDays.value;
+    final currentWorkingDay = currentWorkingDays[index];
+    final updated = [
+      ...currentWorkingDays.take(index),
+      {currentWorkingDay.keys.first: value},
+      ...currentWorkingDays.skip(index + 1),
+    ];
+    _weekDays.value = updated;
+    // final activeCount = updated.where((day) => day.values.first).length;
+    // if (activeCount > 0) {
+    //   _workingDaysController.text = (activeCount * 4).toString();
+    // }
+  }
+
   Future<void> _completeSetup() async {
     if (!_formKey.currentState!.validate()) return;
+
+    // validate weekdays should be at least 1
+    final isWorkingDaysSelected =
+        _weekDays.value.any((day) => day.values.first);
+    if (!isWorkingDaysSelected) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pilih setidaknya 1 hari kerja')),
+      );
+      return;
+    }
 
     _isSubmitting.value = true;
 
     try {
       final provider = context.read<FinancialProvider>();
+
+      // Save working days to ReminderSettings
+      final List<int> selectedWorkDays = [];
+      for (int i = 0; i < _weekDays.value.length; i++) {
+        if (_weekDays.value[i].values.first) {
+          selectedWorkDays.add(i + 1); // 1=Senin, ..., 7=Minggu
+        }
+      }
+
+      final updatedReminderSettings = provider.reminderSettings.copyWith(
+        workDays: selectedWorkDays,
+        enabled: selectedWorkDays.isNotEmpty,
+      );
+      await provider.saveReminderSettings(updatedReminderSettings);
 
       // Save monthly target
       final targetAmount =
@@ -130,7 +259,9 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
           await provider.addObligation(
             name: name,
             targetAmount: amount,
-            dueDate: DateTime(DateTime.now().year, DateTime.now().month + 1, 1),
+            dueDate: DateFormatter.fullDateToDateTime(
+              ob.dueDateController.text,
+            ),
             category: 'setup',
             type: ob.type,
           );
@@ -213,7 +344,10 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
                       // ── Section 1: Target ──────────
                       _buildFinancialGoalSetup(),
 
-                      // ── Section 2: Kewajiban ───────
+                      // ── Section 2: Working Days ──────────
+                      _buildWorkingDaysSetup(),
+
+                      // ── Section 3: Kewajiban ───────
                       _buildObligationDefinition(),
 
                       // Info card
@@ -381,7 +515,7 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(Icons.info_outline, size: 18, color: AppColors.primary),
             const SizedBox(width: 10),
@@ -431,7 +565,7 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
               controller: _targetController,
               labelText: 'Target per bulan',
               hintText: 'Contoh: 5.000.000',
-
+              textInputAction: TextInputAction.next,
               validator: (v) {
                 if (v == null || v.isEmpty) {
                   return 'Masukkan target pendapatan';
@@ -449,6 +583,7 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
             CustomTextFormField(
               controller: _workingDaysController,
               keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.done,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               labelText: 'Hari kerja per bulan',
               hintText: '26',
@@ -479,41 +614,22 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
     final ob = obligations[index];
     return Column(
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: CustomTextFormField(
-                controller: ob.nameController,
-                labelText: 'Nama kewajiban',
-                hintText: 'Contoh: Cicilan Motor',
-                textCapitalization: TextCapitalization.words,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                validator: (val) {
-                  if (val == null || val.isEmpty) {
-                    return 'Masukkan nama kewajiban';
-                  }
-                  return null;
-                },
-                textInputAction: TextInputAction.next,
-              ),
-            ),
-            // Remove button
-            if (obligations.length > 1)
-              IconButton(
-                icon: Icon(
-                  Icons.delete_outline,
-                  size: 18,
-                  color: AppColors.error,
-                ),
-                onPressed: () => _removeObligation(index),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              ),
-          ],
+        CustomTextFormField(
+          controller: ob.nameController,
+          labelText: 'Nama kewajiban',
+          hintText: 'Contoh: Cicilan Motor',
+          textCapitalization: TextCapitalization.words,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 10,
+          ),
+          validator: (val) {
+            if (val == null || val.isEmpty) {
+              return 'Masukkan nama kewajiban';
+            }
+            return null;
+          },
+          textInputAction: TextInputAction.next,
         ),
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -576,7 +692,121 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
             ),
           ],
         ),
+        const SizedBox(height: 8),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: CustomTextFormField(
+                controller: ob.dueDateController,
+                labelText: 'Tanggal jatuh tempo',
+                hintText: 'Contoh: 1 Agustus 2026',
+                readOnly: true,
+                prefixIcon: const Icon(
+                  Icons.calendar_today_outlined,
+                  size: 18,
+                  color: AppColors.onSurfaceVariant,
+                ),
+                textCapitalization: TextCapitalization.words,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return 'Masukkan tanggal jatuh tempo';
+                  }
+                  return null;
+                },
+                textInputAction: TextInputAction.done,
+                onTap: () async {
+                  final pickedDate = await _selectDate(
+                    index,
+                    ob.dueDateController,
+                  );
+
+                  if (pickedDate == null) return;
+
+                  _updateObligationDueDate(index, ob.dueDateController);
+                },
+              ),
+            ),
+            // Remove button
+            if (obligations.length > 1)
+              IconButton(
+                icon: Icon(
+                  Icons.delete_outline,
+                  size: 18,
+                  color: AppColors.error,
+                ),
+                onPressed: () => _removeObligation(index),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
+          ],
+        ),
       ],
+    );
+  }
+
+  Widget _buildWorkingDaysSetup() {
+    return ValueListenableBuilder<List<Map<String, bool>>>(
+      valueListenable: _weekDays,
+      builder: (context, weekDays, child) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionHeader(
+              'Hari Kerja',
+              'Hari kerja yang ingin kamu capai setiap minggu.',
+            ),
+            Row(
+              children: [
+                ...List.generate(weekDays.length, (index) {
+                  return _buildWorkingDays(index, weekDays[index]);
+                }),
+              ],
+            ),
+            const SizedBox(height: 28),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildWorkingDays(int index, Map<String, bool> weekday) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _updateWorkingDays(index, !weekday.values.first),
+        child: Container(
+          margin: index == 0 ? EdgeInsets.zero : const EdgeInsets.only(left: 4),
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          decoration: BoxDecoration(
+            color: weekday.values.first
+                ? AppColors.primary
+                : Colors.grey.shade300,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Text(
+            weekday.keys.first,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: weekday.values.first
+                  ? AppColors.onPrimary
+                  : AppColors.onSurface,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
     );
   }
 }

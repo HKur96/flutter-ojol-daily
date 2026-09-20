@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ojol_daily/core/config/enum.dart';
 import 'package:ojol_daily/core/widgets/animated_option_slider.dart';
 import 'package:ojol_daily/domain/enums.dart';
@@ -26,6 +27,16 @@ class OjolDailyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Ojol Daily',
         debugShowCheckedModeBanner: false,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('id', 'ID'),
+          Locale('en', 'US'),
+        ],
+        locale: const Locale('id', 'ID'),
         theme: AppTheme.lightTheme,
         home: const SplashDecisionScreen(),
       ),

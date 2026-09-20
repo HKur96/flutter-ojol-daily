@@ -13,4 +13,9 @@ class DateFormatter {
   static String dayDate(DateTime date) => _dayDate.format(date);
   static String dayHours(DateTime date) =>
       '${_dayHours.format(date)} ${DateTime.now().timeZoneName}';
+
+  static DateTime fullDateToDateTime(String date) => _fullDate.parse(date);
+  static DateTime shortDateToDateTime(String date) => _shortDate.parse(date);
+  static DateTime dayDateToDateTime(String date) => _dayDate.parse(date);
+  static DateTime dayHoursToDateTime(String date) => _dayHours.parse(date);
 }
