@@ -16,9 +16,7 @@ class FinancialProvider extends ChangeNotifier {
   FinancialProvider({required this.repository});
 
   factory FinancialProvider.create() {
-    return FinancialProvider(
-      repository: FinancialRepository(DatabaseHelper()),
-    );
+    return FinancialProvider(repository: FinancialRepository(DatabaseHelper()));
   }
 
   FinancialState _state = FinancialState.initial();
@@ -47,13 +45,28 @@ class FinancialProvider extends ChangeNotifier {
   int get incomeTodayAmount {
     final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
     return _incomes
-        .where((i) => i.status == TransactionStatus.active && DateFormat('yyyy-MM-dd').format(i.transactionDate) == todayStr)
+        .where(
+          (i) =>
+              i.status == TransactionStatus.active &&
+              DateFormat('yyyy-MM-dd').format(i.transactionDate) == todayStr,
+        )
         .fold<int>(0, (sum, i) => sum + i.amount);
   }
 
   DayStatus get todayDayStatus {
-    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final activity = _dayActivities.firstWhere((a) => a.dateString == todayStr, orElse: () => DayActivity(dateString: todayStr, status: DayStatus.working));
+    final now = DateTime.now();
+    final todayStr = DateFormat('yyyy-MM-dd').format(now);
+    final activity = _dayActivities.firstWhere(
+      (a) => a.dateString == todayStr,
+      orElse: () {
+        final isWorkDay = _reminderSettings.workDays.contains(now.weekday);
+        return DayActivity(
+          dateString: todayStr,
+          status: isWorkDay ? DayStatus.working : DayStatus.off,
+        );
+      },
+    );
+
     return activity.status;
   }
 
@@ -73,7 +86,8 @@ class FinancialProvider extends ChangeNotifier {
       _payments = await repository.getAllObligationPayments();
       _dayActivities = await repository.getAllDayActivities();
 
-      final currentMonthStr = "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}";
+      final currentMonthStr =
+          "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}";
       _currentTarget = await repository.getTargetForMonth(currentMonthStr);
       _reminderSettings = await repository.getReminderSettings();
 
@@ -83,7 +97,9 @@ class FinancialProvider extends ChangeNotifier {
       _recalculateState();
 
       // Notification sync
-      if (_reminderSettings.enabled && incomeTodayAmount == 0 && todayDayStatus != DayStatus.off) {
+      if (_reminderSettings.enabled &&
+          incomeTodayAmount == 0 &&
+          todayDayStatus != DayStatus.off) {
         await NotificationService().scheduleDailyReminders(_reminderSettings);
       } else {
         await NotificationService().cancelAllReminders();
@@ -181,17 +197,25 @@ class FinancialProvider extends ChangeNotifier {
 
     // If allocated amount was used, update the target allocation transaction usedAmount
     if (allocatedAmountUsed > 0 && targetObligationId != null) {
-      final obAllocations = _allocations.where((a) => a.obligationId == targetObligationId && a.status == AllocationStatus.active);
+      final obAllocations = _allocations.where(
+        (a) =>
+            a.obligationId == targetObligationId &&
+            a.status == AllocationStatus.active,
+      );
       int remainingToDeduct = allocatedAmountUsed;
 
       for (final alloc in obAllocations) {
         if (remainingToDeduct <= 0) break;
         final availableInAlloc = alloc.amount - alloc.usedAmount;
-        final deduct = remainingToDeduct > availableInAlloc ? availableInAlloc : remainingToDeduct;
+        final deduct = remainingToDeduct > availableInAlloc
+            ? availableInAlloc
+            : remainingToDeduct;
 
         final updatedAlloc = alloc.copyWith(
           usedAmount: alloc.usedAmount + deduct,
-          status: (alloc.usedAmount + deduct >= alloc.amount) ? AllocationStatus.fullyUsed : AllocationStatus.partiallyUsed,
+          status: (alloc.usedAmount + deduct >= alloc.amount)
+              ? AllocationStatus.fullyUsed
+              : AllocationStatus.partiallyUsed,
           updatedAt: now,
         );
         await repository.updateAllocation(updatedAlloc);
@@ -290,7 +314,9 @@ class FinancialProvider extends ChangeNotifier {
     required int amount,
     String? note,
   }) async {
-    final obSummary = _state.obligationSummaries.firstWhere((o) => o.id == obligationId);
+    final obSummary = _state.obligationSummaries.firstWhere(
+      (o) => o.id == obligationId,
+    );
 
     // Validate FI-004 overpayment prevention
     if (!FinancialCalculator.validateObligationPayment(
@@ -323,7 +349,8 @@ class FinancialProvider extends ChangeNotifier {
     int startBalance = 0,
   }) async {
     final now = DateTime.now();
-    final currentMonthStr = "${now.year}-${now.month.toString().padLeft(2, '0')}";
+    final currentMonthStr =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}";
     final target = TargetDefinition(
       id: 'target_$currentMonthStr',
       monthlyTargetAmount: monthlyTargetAmount,

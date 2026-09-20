@@ -119,7 +119,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     final screens = [
-      const DashboardScreen(),
+      DashboardScreen(onOpen: _onAddPressed),
       const AllocationScreen(),
       const ReportScreen(),
       const SettingsScreen(),

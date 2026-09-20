@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ojol_daily/presentation/screens/expense_screen.dart';
-import 'package:ojol_daily/presentation/screens/income_screen.dart';
-import 'package:ojol_daily/presentation/screens/obligation_screen.dart';
-import 'package:ojol_daily/presentation/screens/target_screen.dart';
+import 'package:ojol_daily/core/utils/currency_formatter.dart';
+import 'package:ojol_daily/core/utils/date_formatter.dart';
 import 'package:provider/provider.dart';
 import '../../domain/enums.dart';
 import '../../domain/financial_state.dart';
 import '../../services/notification_service.dart';
 import '../providers/financial_provider.dart';
 import '../theme/app_theme.dart';
-import '../widgets/quick_input_modal.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  final VoidCallback onOpen;
+
+  const DashboardScreen({super.key, required this.onOpen});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -32,17 +31,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await service.requestPermissions();
   }
 
-  void _showQuickInput(BuildContext context) {
-    QuickInputModal.show(context);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp ',
-      decimalDigits: 0,
-    );
     final provider = Provider.of<FinancialProvider>(context);
     final state = provider.state;
     final target = state.targetSummary;
@@ -164,9 +154,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(height: 16),
 
                   // Greeting
-                  const Text(
-                    "Selamat narik 👋",
-                    style: TextStyle(
+                  Text(
+                    DateFormatter.greeting,
+                    style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: AppColors.onSurface,
@@ -244,7 +234,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 horizontal: 12,
                               ),
                             ),
-                            onPressed: () => _showQuickInput(context),
+                            onPressed: widget.onOpen,
                             child: const Text(
                               "Catat",
                               style: TextStyle(fontSize: 12),
@@ -285,7 +275,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                 ),
                                 Text(
-                                  "Alokasi kurang ${currencyFormat.format(state.allocationShortfall)} karena pengeluaran mendadak memakan dana alokasi.",
+                                  "Alokasi kurang ${CurrencyFormatter.format(state.allocationShortfall)} karena pengeluaran mendadak memakan dana alokasi.",
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: AppColors.onSurface,
@@ -373,7 +363,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            currencyFormat.format(state.freeCash),
+                            CurrencyFormatter.format(state.freeCash),
                             style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.w800,
@@ -402,7 +392,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                     ),
                                     Text(
-                                      currencyFormat.format(
+                                      CurrencyFormatter.format(
                                         state.cashAvailable,
                                       ),
                                       style: const TextStyle(
@@ -425,7 +415,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                     ),
                                     Text(
-                                      "- ${currencyFormat.format(state.totalActiveAllocation)}",
+                                      "- ${CurrencyFormatter.format(state.totalActiveAllocation)}",
                                       style: const TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w700,
@@ -489,7 +479,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             textBaseline: TextBaseline.alphabetic,
                             children: [
                               Text(
-                                currencyFormat.format(state.totalIncome),
+                                CurrencyFormatter.format(state.totalIncome),
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.w800,
@@ -499,7 +489,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               if (target != null)
                                 Expanded(
                                   child: Text(
-                                    "Target: ${currencyFormat.format(target.requiredDailyIncome)}/hari narik",
+                                    "Target: ${CurrencyFormatter.format(target.requiredDailyIncome)}/hari narik",
                                     style: const TextStyle(
                                       fontSize: 12,
                                       color: AppColors.onSurfaceVariant,

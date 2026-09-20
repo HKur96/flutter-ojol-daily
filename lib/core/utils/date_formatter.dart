@@ -20,4 +20,12 @@ class DateFormatter {
   static DateTime shortDateToDateTime(String date) => _shortDate.parse(date);
   static DateTime dayDateToDateTime(String date) => _dayDate.parse(date);
   static DateTime dayHoursToDateTime(String date) => _dayHours.parse(date);
+
+  static String get greeting {
+    final hour = DateTime.now().hour;
+    if (hour < 11) return 'Selamat pagi';
+    if (hour < 15) return 'Selamat siang';
+    if (hour < 18) return 'Selamat sore';
+    return 'Selamat malam';
+  }
 }

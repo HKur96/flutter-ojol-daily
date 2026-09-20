@@ -357,6 +357,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     );
                     if (confirm == true) {
                       await provider.clearAllData();
+                      if (!context.mounted) return;
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(
                           builder: (_) => const FinancialSetupScreen(),
