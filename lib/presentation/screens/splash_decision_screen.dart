@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ojol_daily/core/config/extension.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../main.dart';
 import '../theme/app_theme.dart';
@@ -12,16 +13,41 @@ class SplashDecisionScreen extends StatefulWidget {
   State<SplashDecisionScreen> createState() => _SplashDecisionScreenState();
 }
 
-class _SplashDecisionScreenState extends State<SplashDecisionScreen> {
+class _SplashDecisionScreenState extends State<SplashDecisionScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeIn;
+  late Animation<Offset> _slideUp;
+
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+
+    _fadeIn = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+
+    _slideUp = Tween<Offset>(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    _controller.forward();
+
     _checkInitialRoute();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   Future<void> _checkInitialRoute() async {
     // Add brief splash delay for smooth transition
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 2500));
 
     bool onboardingCompleted = false;
     bool financialSetupCompleted = false;
@@ -29,7 +55,8 @@ class _SplashDecisionScreenState extends State<SplashDecisionScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
-      financialSetupCompleted = prefs.getBool('financial_setup_completed') ?? false;
+      financialSetupCompleted =
+          prefs.getBool('financial_setup_completed') ?? false;
     } catch (e) {
       debugPrint('Error accessing SharedPreferences: $e');
     }
@@ -65,58 +92,36 @@ class _SplashDecisionScreenState extends State<SplashDecisionScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.35),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
+        child: FadeTransition(
+          opacity: _fadeIn,
+          child: SlideTransition(
+            position: _slideUp,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('app_logo'.icon, width: 80, height: 80),
+                const SizedBox(height: 20),
+                Text(
+                  'Ojol Daily',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.onSurface,
+                    letterSpacing: -0.5,
                   ),
-                ],
-              ),
-              child: const Icon(
-                Icons.two_wheeler,
-                color: Colors.white,
-                size: 44,
-              ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Kelola Uang Narik Setiap Hari',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            Text(
-              'Ojol Daily',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: AppColors.onSurface,
-                letterSpacing: -0.5,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Kelola Uang Narik Setiap Hari',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppColors.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 36),
-            SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                color: AppColors.primary,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

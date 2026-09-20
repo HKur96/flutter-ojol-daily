@@ -229,12 +229,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         const SizedBox(height: 16),
         DropdownButtonFormField<IncomeSource>(
           value: selectedSource,
+          isExpanded: true,
           decoration: const InputDecoration(labelText: "Aplikasi / Sumber"),
           items: IncomeSource.values
               .map(
                 (c) => DropdownMenuItem(
                   value: c,
-                  child: Text(c.displayIncomeSource),
+                  child: Text(
+                    c.displayIncomeSource,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               )
               .toList(),
@@ -292,6 +296,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
           value: selectedCategory,
+          isExpanded: true,
           decoration: const InputDecoration(labelText: "Kategori Pengeluaran"),
           items: [
             'Bensin',
@@ -302,7 +307,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             'Keluarga',
             'Mendadak',
             'Lainnya',
-          ].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+          ]
+              .map(
+                (c) => DropdownMenuItem(
+                  value: c,
+                  child: Text(c, overflow: TextOverflow.ellipsis),
+                ),
+              )
+              .toList(),
           onChanged: (val) => setState(() => selectedCategory = val!),
         ),
         const SizedBox(height: 12),

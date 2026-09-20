@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ojol_daily/core/config/extension.dart';
 import 'package:ojol_daily/core/utils/currency_formatter.dart';
 import 'package:ojol_daily/core/utils/date_formatter.dart';
 import 'package:provider/provider.dart';
@@ -41,18 +42,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppColors.primaryContainer,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.two_wheeler,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
+            Image.asset('app_logo'.icon, width: 20, height: 20),
             const SizedBox(width: 10),
             const Text(
               "Ojol Daily",
@@ -515,7 +505,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(height: 16),
 
                   // 3. Nearest Obligation Card
-                  if (state.obligationSummaries.isNotEmpty) ...[
+                  if (state.obligationShortestDue != null) ...[
                     const Text(
                       "Kewajiban Terdekat",
                       style: TextStyle(
@@ -525,7 +515,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 8),
                     _NearestObligationCard(
-                      summary: state.obligationSummaries.first,
+                      summary: state.obligationShortestDue!,
                     ),
                   ],
 

@@ -225,7 +225,7 @@ class AllocationScreen extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        "${ob.paymentProgressPercent.toStringAsFixed(0)}% terkumpul",
+                                        "${ob.allocationProgressPercent.toStringAsFixed(0)}% terkumpul",
                                         style: const TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w700,
@@ -236,7 +236,7 @@ class AllocationScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 8),
                                   LinearProgressIndicator(
-                                    value: ob.paymentProgressPercent / 100.0,
+                                    value: ob.allocationProgressPercent / 100.0,
                                     backgroundColor:
                                         AppColors.surfaceContainerHigh,
                                     color: AppColors.primary,
@@ -411,11 +411,15 @@ class AllocationScreen extends StatelessWidget {
                     const SizedBox(height: 6),
                     DropdownButtonFormField<ObligationDefinitionType>(
                       value: selectedType,
+                      isExpanded: true,
                       items: ObligationDefinitionType.values
                           .map(
                             (t) => DropdownMenuItem(
                               value: t,
-                              child: Text(t.displayObligation),
+                              child: Text(
+                                t.displayObligation,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           )
                           .toList(),
@@ -576,7 +580,7 @@ class AllocationScreen extends StatelessWidget {
           builder: (context, setState) {
             return Padding(
               padding: EdgeInsets.only(
-                top: 20,
+                top: 10,
                 left: 20,
                 right: 20,
                 bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
@@ -585,22 +589,40 @@ class AllocationScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 6,
+                        width: 80,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
                   const Text(
                     "Sisihkan Uang ke Pos Alokasi",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 16),
+                  const Text(
+                    "Pilih Tujuan Kewajiban",
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
                     value: selectedObligationId,
-                    decoration: const InputDecoration(
-                      labelText: "Pilih Tujuan Kewajiban",
-                    ),
+                    isExpanded: true,
                     items: provider.state.obligationSummaries
                         .map(
                           (o) => DropdownMenuItem(
                             value: o.id,
                             child: Text(
-                              "${o.name} (Sisa target: ${o.remainingAmount})",
+                              "${o.name} (Sisa target: ${CurrencyFormatter.format(o.remainingAmount)})",
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         )

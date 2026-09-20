@@ -10,11 +10,13 @@ class ObligationSummary {
   final int allocatedAmount;
   final int paidAmount;
   final int remainingAmount; // MAX(0, targetAmount - paidAmount)
-  final double allocationProgressPercent; // (allocatedAmount / targetAmount) * 100
+  final double
+  allocationProgressPercent; // (allocatedAmount / targetAmount) * 100
   final double paymentProgressPercent; // (paidAmount / targetAmount) * 100
   final DateTime dueDate;
   final ObligationStatus status;
-  final int shortfall; // if this specific obligation allocation is underfunded due to emergency expense
+  final int
+  shortfall; // if this specific obligation allocation is underfunded due to emergency expense
 
   const ObligationSummary({
     required this.id,
@@ -37,7 +39,8 @@ class TargetSummary {
   final int remainingTargetAmount; // MAX(0, monthlyTargetAmount - totalIncome)
   final int totalWorkingDays;
   final int remainingWorkingDays;
-  final int requiredDailyIncome; // MAX(0, remainingTargetAmount / remainingWorkingDays)
+  final int
+  requiredDailyIncome; // MAX(0, remainingTargetAmount / remainingWorkingDays)
   final double progressPercent;
   final TargetStatus status;
 
@@ -60,7 +63,8 @@ class FinancialState {
   final int cashAvailable; // startBalance + totalIncome - totalExpense
   final int totalActiveAllocation; // sum of active allocations
   final int freeCash; // MAX(0, cashAvailable - totalActiveAllocation)
-  final int allocationShortfall; // MAX(0, totalActiveAllocation - cashAvailable)
+  final int
+  allocationShortfall; // MAX(0, totalActiveAllocation - cashAvailable)
   final bool hasShortfall;
   final List<ObligationSummary> obligationSummaries;
   final TargetSummary? targetSummary;
@@ -81,6 +85,16 @@ class FinancialState {
     required this.expenseToIncomeRatio,
     required this.fuelToIncomeRatio,
   });
+
+  ObligationSummary? get obligationShortestDue {
+    if (obligationSummaries.isEmpty) {
+      return null;
+    }
+    
+    return obligationSummaries.reduce(
+      (a, b) => a.dueDate.isBefore(b.dueDate) ? a : b,
+    );
+  }
 
   factory FinancialState.initial() {
     return const FinancialState(
