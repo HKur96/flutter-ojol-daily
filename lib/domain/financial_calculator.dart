@@ -15,6 +15,8 @@ class FinancialCalculator {
     required List<ObligationPayment> paymentList,
     TargetDefinition? currentTarget,
     List<DayActivity> dayActivities = const [],
+    List<Wallet> wallets = const [],
+    List<WalletTransfer> transfers = const [],
     DateTime? todayDate,
   }) {
     final today = todayDate ?? DateTime.now();
@@ -51,7 +53,52 @@ class FinancialCalculator {
         )
         .fold<int>(0, (sum, item) => sum + item.amount);
 
-    // 4. Total Active Allocations (PRD 10 - FI-003)
+    // 4. Wallet Balances Calculation (PRD 49.2)
+    final activePayments = paymentList.where(
+      (p) => p.status == TransactionStatus.active,
+    );
+    final walletBalances = <String, int>{};
+    final defaultWalletId = wallets.isNotEmpty
+        ? (wallets.any((w) => w.isDefault)
+              ? wallets.firstWhere((w) => w.isDefault).id
+              : wallets.first.id)
+        : 'w_cash';
+
+    for (final wallet in wallets) {
+      int balance = 0;
+      if (wallet.id == defaultWalletId) {
+        balance += startBalance;
+      }
+      balance += activeIncomes
+          .where((i) => i.walletId == wallet.id)
+          .fold<int>(0, (sum, i) => sum + i.amount);
+      balance -= activeExpenses
+          .where((e) => e.walletId == wallet.id)
+          .fold<int>(0, (sum, e) => sum + e.amount);
+      for (final payment in activePayments) {
+        if (payment.splits.isNotEmpty) {
+          for (final split in payment.splits) {
+            if (split.walletId == wallet.id) {
+              balance -= split.amount;
+            }
+          }
+        } else {
+          if (wallet.id == defaultWalletId) {
+            balance -= payment.amount;
+          }
+        }
+      }
+      balance -= transfers
+          .where((t) => t.fromWalletId == wallet.id)
+          .fold<int>(0, (sum, t) => sum + t.amount);
+      balance += transfers
+          .where((t) => t.toWalletId == wallet.id)
+          .fold<int>(0, (sum, t) => sum + t.amount);
+
+      walletBalances[wallet.id] = balance;
+    }
+
+    // 5. Total Active Allocations (PRD 10 - FI-003)
     final activeAllocations = allocationList.where(
       (a) => a.status != AllocationStatus.cancelled,
     );
@@ -60,7 +107,7 @@ class FinancialCalculator {
       (sum, item) => sum + item.amount - item.usedAmount,
     );
 
-    // 5. Free Cash & Allocation Shortfall (PRD 15, 16, 30, 31, FI-005, FI-006)
+    // 6. Free Cash & Allocation Shortfall (PRD 15, 16, 30, 31, FI-005, FI-006)
     final freeCash = (cashAvailable - totalActiveAllocation) < 0
         ? 0
         : (cashAvailable - totalActiveAllocation);
@@ -68,7 +115,7 @@ class FinancialCalculator {
     final allocationShortfall = rawShortfall < 0 ? 0 : rawShortfall;
     final hasShortfall = allocationShortfall > 0;
 
-    // 6. Obligation Summaries (PRD 5, 6, 7, 12, 13, 14, 21)
+    // 7. Obligation Summaries (PRD 5, 6, 7, 12, 13, 14, 21)
     final obligationSummaries = <ObligationSummary>[];
 
     for (final ob in obligationList) {
@@ -137,7 +184,7 @@ class FinancialCalculator {
     // Sort obligations by priority & due date (PRD 21)
     obligationSummaries.sort((a, b) => a.dueDate.compareTo(b.dueDate));
 
-    // 7. Target Summary (PRD 22, 23, 24, 25, 26)
+    // 8. Target Summary (PRD 22, 23, 24, 25, 26)
     TargetSummary? targetSummary;
     if (currentTarget != null) {
       final monthlyTarget = currentTarget.monthlyTargetAmount;
@@ -209,6 +256,9 @@ class FinancialCalculator {
       targetSummary: targetSummary,
       expenseToIncomeRatio: expenseToIncomeRatio,
       fuelToIncomeRatio: fuelToIncomeRatio,
+      wallets: wallets,
+      walletBalances: walletBalances,
+      transfers: transfers,
     );
   }
 

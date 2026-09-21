@@ -25,6 +25,8 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
   final _expenseAmountController = TextEditingController();
   final _incomeNoteController = TextEditingController();
   final _expenseNoteController = TextEditingController();
+  String? _selectedIncomeWalletId;
+  String? _selectedExpenseWalletId;
 
   // ── income-specific state ─────────────────────────────────────────────
   IncomeSource? _selectedIncomeSource;
@@ -58,30 +60,38 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
         0;
   }
 
-  void _saveIncome() {
+  void _saveIncome(String defaultWalletId) {
     final amount = _parsedIncomeAmount();
     if (amount > 0 && _selectedIncomeSource != null) {
       Provider.of<FinancialProvider>(context, listen: false).addIncome(
         amount: amount,
         category: _selectedIncomeSource!.displayIncomeSource,
-        note: _incomeNoteController.text.isNotEmpty ? _incomeNoteController.text : null,
+        walletId: _selectedIncomeWalletId ?? defaultWalletId,
+        note: _incomeNoteController.text.isNotEmpty
+            ? _incomeNoteController.text
+            : null,
       );
       Navigator.pop(context);
     }
   }
 
-  void _saveExpense() {
+  void _saveExpense(String defaultWalletId) {
     final amount = _parsedExpenseAmount();
     if (amount > 0) {
       Provider.of<FinancialProvider>(context, listen: false).addExpense(
         amount: amount,
         category: _selectedCategory,
+        walletId: _selectedExpenseWalletId ?? defaultWalletId,
         source: _selectedExpenseSource,
-        freeAmountUsed:
-            _selectedExpenseSource == ExpenseSource.free ? amount : 0,
-        allocatedAmountUsed:
-            _selectedExpenseSource == ExpenseSource.allocated ? amount : 0,
-        note: _expenseNoteController.text.isNotEmpty ? _expenseNoteController.text : null,
+        freeAmountUsed: _selectedExpenseSource == ExpenseSource.free
+            ? amount
+            : 0,
+        allocatedAmountUsed: _selectedExpenseSource == ExpenseSource.allocated
+            ? amount
+            : 0,
+        note: _expenseNoteController.text.isNotEmpty
+            ? _expenseNoteController.text
+            : null,
       );
       Navigator.pop(context);
     }
@@ -91,6 +101,14 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<FinancialProvider>(context);
+    final wallets = provider.wallets;
+    final defaultWalletId = wallets.isNotEmpty
+        ? (wallets.any((w) => w.isDefault)
+              ? wallets.firstWhere((w) => w.isDefault).id
+              : wallets.first.id)
+        : 'w_cash';
+
     return Padding(
       padding: EdgeInsets.only(
         top: 10,
@@ -128,9 +146,9 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
 
           // form body
           if (_dailyType == DailyType.income)
-            _buildIncomeForm()
+            _buildIncomeForm(wallets, defaultWalletId)
           else
-            _buildExpenseForm(),
+            _buildExpenseForm(wallets, defaultWalletId),
         ],
       ),
     );
@@ -138,7 +156,9 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
 
   // ── income form ───────────────────────────────────────────────────────
 
-  Widget _buildIncomeForm() {
+  Widget _buildIncomeForm(List<dynamic> wallets, String defaultWalletId) {
+    final selectedWallet = _selectedIncomeWalletId ?? defaultWalletId;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -167,6 +187,25 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
           },
         ),
         const SizedBox(height: 12),
+        if (wallets.isNotEmpty) ...[
+          DropdownButtonFormField<String>(
+            value: wallets.any((w) => w.id == selectedWallet)
+                ? selectedWallet
+                : defaultWalletId,
+            isExpanded: true,
+            decoration: const InputDecoration(labelText: "Dompet Tujuan"),
+            items: wallets
+                .map(
+                  (w) => DropdownMenuItem<String>(
+                    value: w.id as String,
+                    child: Text("${w.name} (Saldo IDR ${w.id})"),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) => setState(() => _selectedIncomeWalletId = val),
+          ),
+          const SizedBox(height: 12),
+        ],
         CustomTextFormField.currency(
           controller: _incomeAmountController,
           labelText: "Nominal (Rp)",
@@ -179,7 +218,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
         ),
         const SizedBox(height: 20),
         ElevatedButton(
-          onPressed: _saveIncome,
+          onPressed: () => _saveIncome(defaultWalletId),
           child: const Text("Simpan Pendapatan"),
         ),
       ],
@@ -188,7 +227,9 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
 
   // ── expense form ──────────────────────────────────────────────────────
 
-  Widget _buildExpenseForm() {
+  Widget _buildExpenseForm(List<dynamic> wallets, String defaultWalletId) {
+    final selectedWallet = _selectedExpenseWalletId ?? defaultWalletId;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -200,28 +241,47 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
         DropdownButtonFormField<String>(
           value: _selectedCategory,
           isExpanded: true,
-          decoration:
-              const InputDecoration(labelText: "Kategori Pengeluaran"),
-          items: [
-            'Bensin',
-            'Makan',
-            'Servis Motor',
-            'Oli',
-            'Tambal Ban',
-            'Keluarga',
-            'Mendadak',
-            'Lainnya',
-          ]
-              .map(
-                (c) => DropdownMenuItem(
-                  value: c,
-                  child: Text(c, overflow: TextOverflow.ellipsis),
-                ),
-              )
-              .toList(),
+          decoration: const InputDecoration(labelText: "Kategori Pengeluaran"),
+          items:
+              [
+                    'Bensin',
+                    'Makan',
+                    'Servis Motor',
+                    'Oli',
+                    'Tambal Ban',
+                    'Keluarga',
+                    'Mendadak',
+                    'Lainnya',
+                  ]
+                  .map(
+                    (c) => DropdownMenuItem(
+                      value: c,
+                      child: Text(c, overflow: TextOverflow.ellipsis),
+                    ),
+                  )
+                  .toList(),
           onChanged: (val) => setState(() => _selectedCategory = val!),
         ),
         const SizedBox(height: 12),
+        if (wallets.isNotEmpty) ...[
+          DropdownButtonFormField<String>(
+            value: wallets.any((w) => w.id == selectedWallet)
+                ? selectedWallet
+                : defaultWalletId,
+            isExpanded: true,
+            decoration: const InputDecoration(labelText: "Dompet Asal"),
+            items: wallets
+                .map(
+                  (w) => DropdownMenuItem<String>(
+                    value: w.id as String,
+                    child: Text("${w.name}"),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) => setState(() => _selectedExpenseWalletId = val),
+          ),
+          const SizedBox(height: 12),
+        ],
         CustomTextFormField.currency(
           controller: _expenseAmountController,
           labelText: "Nominal (Rp)",
@@ -234,11 +294,11 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
         const SizedBox(height: 6),
         SegmentedButton<ExpenseSource>(
           segments: const [
+            ButtonSegment(value: ExpenseSource.free, label: Text("Uang Bebas")),
             ButtonSegment(
-                value: ExpenseSource.free, label: Text("Uang Bebas")),
-            ButtonSegment(
-                value: ExpenseSource.allocated,
-                label: Text("Uang Alokasi")),
+              value: ExpenseSource.allocated,
+              label: Text("Uang Alokasi"),
+            ),
           ],
           selected: {_selectedExpenseSource},
           onSelectionChanged: (set) =>
@@ -253,7 +313,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
         const SizedBox(height: 20),
         ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-          onPressed: _saveExpense,
+          onPressed: () => _saveExpense(defaultWalletId),
           child: const Text("Simpan Pengeluaran"),
         ),
       ],

@@ -376,6 +376,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const Text(
+                          "Pengeluaran Hari Ini",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        // const SizedBox(height: 12),
+                        Text(
+                          CurrencyFormatter.format(provider.expenseTodayAmount),
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.error,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -409,7 +426,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        // const SizedBox(height: 12),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.baseline,
                           textBaseline: TextBaseline.alphabetic,
@@ -450,36 +467,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 const SizedBox(height: 16),
 
-                // 3. Dynamic expense allocation card
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Pengeluaran Hari Ini",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          CurrencyFormatter.format(provider.expenseTodayAmount),
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // 4. Nearest Obligation Card
+                // 3. Nearest Obligation Card
                 if (state.obligationShortestDue != null) ...[
                   const Text(
                     "Kewajiban Terdekat",

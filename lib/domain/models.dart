@@ -4,6 +4,9 @@ library;
 import 'package:ojol_daily/core/config/enum.dart';
 
 import 'enums.dart';
+import 'wallet.dart';
+
+export 'wallet.dart';
 
 /// Single income transaction record (PRD Section 2, 8.1)
 class IncomeTransaction {
@@ -12,6 +15,7 @@ class IncomeTransaction {
   final String category; // e.g. "Gojek", "Grab", "Maxim", "Tips"
   final String? note;
   final DateTime transactionDate;
+  final String walletId; // Destination wallet ID (defaults to 'w_cash')
   final TransactionStatus status;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -22,6 +26,7 @@ class IncomeTransaction {
     required this.category,
     this.note,
     required this.transactionDate,
+    this.walletId = 'w_cash',
     this.status = TransactionStatus.active,
     required this.createdAt,
     required this.updatedAt,
@@ -34,6 +39,7 @@ class IncomeTransaction {
       'category': category,
       'note': note,
       'transactionDate': transactionDate.toIso8601String(),
+      'walletId': walletId,
       'status': status.name,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
@@ -47,6 +53,7 @@ class IncomeTransaction {
       category: map['category'] as String,
       note: map['note'] as String?,
       transactionDate: DateTime.parse(map['transactionDate'] as String),
+      walletId: (map['walletId'] as String?) ?? 'w_cash',
       status: TransactionStatus.values.byName(map['status'] as String),
       createdAt: DateTime.parse(map['createdAt'] as String),
       updatedAt: DateTime.parse(map['updatedAt'] as String),
@@ -59,6 +66,7 @@ class IncomeTransaction {
     String? category,
     String? note,
     DateTime? transactionDate,
+    String? walletId,
     TransactionStatus? status,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -69,6 +77,7 @@ class IncomeTransaction {
       category: category ?? this.category,
       note: note ?? this.note,
       transactionDate: transactionDate ?? this.transactionDate,
+      walletId: walletId ?? this.walletId,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -83,10 +92,12 @@ class ExpenseTransaction {
   final String category; // e.g. "Bensin", "Makan", "Servis Motor", "Keluarga"
   final String? note;
   final DateTime transactionDate;
+  final String walletId; // Source wallet ID (defaults to 'w_cash')
   final ExpenseSource source; // FREE, ALLOCATED, MIXED
   final int freeAmountUsed;
   final int allocatedAmountUsed;
-  final String? targetObligationId; // if allocated or mixed, which obligation's allocation was used
+  final String?
+  targetObligationId; // if allocated or mixed, which obligation's allocation was used
   final TransactionStatus status;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -97,6 +108,7 @@ class ExpenseTransaction {
     required this.category,
     this.note,
     required this.transactionDate,
+    this.walletId = 'w_cash',
     required this.source,
     required this.freeAmountUsed,
     required this.allocatedAmountUsed,
@@ -113,6 +125,7 @@ class ExpenseTransaction {
       'category': category,
       'note': note,
       'transactionDate': transactionDate.toIso8601String(),
+      'walletId': walletId,
       'source': source.name,
       'freeAmountUsed': freeAmountUsed,
       'allocatedAmountUsed': allocatedAmountUsed,
@@ -130,6 +143,7 @@ class ExpenseTransaction {
       category: map['category'] as String,
       note: map['note'] as String?,
       transactionDate: DateTime.parse(map['transactionDate'] as String),
+      walletId: (map['walletId'] as String?) ?? 'w_cash',
       source: ExpenseSource.values.byName(map['source'] as String),
       freeAmountUsed: (map['freeAmountUsed'] as num).toInt(),
       allocatedAmountUsed: (map['allocatedAmountUsed'] as num).toInt(),
@@ -146,6 +160,7 @@ class ExpenseTransaction {
     String? category,
     String? note,
     DateTime? transactionDate,
+    String? walletId,
     ExpenseSource? source,
     int? freeAmountUsed,
     int? allocatedAmountUsed,
@@ -160,6 +175,7 @@ class ExpenseTransaction {
       category: category ?? this.category,
       note: note ?? this.note,
       transactionDate: transactionDate ?? this.transactionDate,
+      walletId: walletId ?? this.walletId,
       source: source ?? this.source,
       freeAmountUsed: freeAmountUsed ?? this.freeAmountUsed,
       allocatedAmountUsed: allocatedAmountUsed ?? this.allocatedAmountUsed,
@@ -332,6 +348,7 @@ class ObligationPayment {
   final int amount;
   final DateTime paymentDate;
   final String? note;
+  final List<ObligationPaymentSplit> splits; // Multi-wallet payment breakdown
   final TransactionStatus status;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -342,6 +359,7 @@ class ObligationPayment {
     required this.amount,
     required this.paymentDate,
     this.note,
+    this.splits = const [],
     this.status = TransactionStatus.active,
     required this.createdAt,
     required this.updatedAt,
@@ -360,13 +378,17 @@ class ObligationPayment {
     };
   }
 
-  factory ObligationPayment.fromMap(Map<String, dynamic> map) {
+  factory ObligationPayment.fromMap(
+    Map<String, dynamic> map, {
+    List<ObligationPaymentSplit> splits = const [],
+  }) {
     return ObligationPayment(
       id: map['id'] as String,
       obligationId: map['obligationId'] as String,
       amount: (map['amount'] as num).toInt(),
       paymentDate: DateTime.parse(map['paymentDate'] as String),
       note: map['note'] as String?,
+      splits: splits,
       status: TransactionStatus.values.byName(map['status'] as String),
       createdAt: DateTime.parse(map['createdAt'] as String),
       updatedAt: DateTime.parse(map['updatedAt'] as String),
@@ -379,6 +401,7 @@ class ObligationPayment {
     int? amount,
     DateTime? paymentDate,
     String? note,
+    List<ObligationPaymentSplit>? splits,
     TransactionStatus? status,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -389,6 +412,7 @@ class ObligationPayment {
       amount: amount ?? this.amount,
       paymentDate: paymentDate ?? this.paymentDate,
       note: note ?? this.note,
+      splits: splits ?? this.splits,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -480,11 +504,7 @@ class DayActivity {
   });
 
   Map<String, dynamic> toMap() {
-    return {
-      'dateString': dateString,
-      'status': status.name,
-      'note': note,
-    };
+    return {'dateString': dateString, 'status': status.name, 'note': note};
   }
 
   factory DayActivity.fromMap(Map<String, dynamic> map) {
@@ -503,7 +523,8 @@ class ReminderSettings {
   final String firstReminderTime; // Format "HH:mm" e.g. "20:00"
   final bool secondReminderEnabled;
   final String secondReminderTime; // Format "HH:mm" e.g. "22:00"
-  final List<int> workDays; // List of ISO weekday numbers 1..7 (1=Monday, 7=Sunday)
+  final List<int>
+  workDays; // List of ISO weekday numbers 1..7 (1=Monday, 7=Sunday)
 
   const ReminderSettings({
     this.enabled = true,
@@ -528,12 +549,20 @@ class ReminderSettings {
   factory ReminderSettings.fromMap(Map<String, dynamic> map) {
     return ReminderSettings(
       enabled: map['enabled'] == 1 || map['enabled'] == true,
-      firstReminderEnabled: map['firstReminderEnabled'] == 1 || map['firstReminderEnabled'] == true,
+      firstReminderEnabled:
+          map['firstReminderEnabled'] == 1 ||
+          map['firstReminderEnabled'] == true,
       firstReminderTime: (map['firstReminderTime'] as String?) ?? '20:00',
-      secondReminderEnabled: map['secondReminderEnabled'] == 1 || map['secondReminderEnabled'] == true,
+      secondReminderEnabled:
+          map['secondReminderEnabled'] == 1 ||
+          map['secondReminderEnabled'] == true,
       secondReminderTime: (map['secondReminderTime'] as String?) ?? '22:00',
-      workDays: map['workDays'] != null && (map['workDays'] as String).isNotEmpty
-          ? (map['workDays'] as String).split(',').map((e) => int.parse(e.trim())).toList()
+      workDays:
+          map['workDays'] != null && (map['workDays'] as String).isNotEmpty
+          ? (map['workDays'] as String)
+                .split(',')
+                .map((e) => int.parse(e.trim()))
+                .toList()
           : [1, 2, 3, 4, 5, 6, 7],
     );
   }
@@ -550,7 +579,8 @@ class ReminderSettings {
       enabled: enabled ?? this.enabled,
       firstReminderEnabled: firstReminderEnabled ?? this.firstReminderEnabled,
       firstReminderTime: firstReminderTime ?? this.firstReminderTime,
-      secondReminderEnabled: secondReminderEnabled ?? this.secondReminderEnabled,
+      secondReminderEnabled:
+          secondReminderEnabled ?? this.secondReminderEnabled,
       secondReminderTime: secondReminderTime ?? this.secondReminderTime,
       workDays: workDays ?? this.workDays,
     );
@@ -586,10 +616,16 @@ class ReminderLog {
   factory ReminderLog.fromMap(Map<String, dynamic> map) {
     return ReminderLog(
       dateString: map['dateString'] as String,
-      firstReminderSent: map['firstReminderSent'] == 1 || map['firstReminderSent'] == true,
-      secondReminderSent: map['secondReminderSent'] == 1 || map['secondReminderSent'] == true,
-      firstReminderSentAt: map['firstReminderSentAt'] != null ? DateTime.parse(map['firstReminderSentAt'] as String) : null,
-      secondReminderSentAt: map['secondReminderSentAt'] != null ? DateTime.parse(map['secondReminderSentAt'] as String) : null,
+      firstReminderSent:
+          map['firstReminderSent'] == 1 || map['firstReminderSent'] == true,
+      secondReminderSent:
+          map['secondReminderSent'] == 1 || map['secondReminderSent'] == true,
+      firstReminderSentAt: map['firstReminderSentAt'] != null
+          ? DateTime.parse(map['firstReminderSentAt'] as String)
+          : null,
+      secondReminderSentAt: map['secondReminderSentAt'] != null
+          ? DateTime.parse(map['secondReminderSentAt'] as String)
+          : null,
     );
   }
 
@@ -609,4 +645,3 @@ class ReminderLog {
     );
   }
 }
-

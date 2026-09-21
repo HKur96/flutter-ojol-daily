@@ -38,9 +38,30 @@ void main() {
     // 2. Multiple income transactions
     test('2. Multiple income transactions sum correctly', () {
       final incomes = [
-        IncomeTransaction(id: '1', amount: 150000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now),
-        IncomeTransaction(id: '2', amount: 80000, category: 'Grab', transactionDate: now, createdAt: now, updatedAt: now),
-        IncomeTransaction(id: '3', amount: 20000, category: 'Tips', transactionDate: now, createdAt: now, updatedAt: now),
+        IncomeTransaction(
+          id: '1',
+          amount: 150000,
+          category: 'Gojek',
+          transactionDate: now,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        IncomeTransaction(
+          id: '2',
+          amount: 80000,
+          category: 'Grab',
+          transactionDate: now,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        IncomeTransaction(
+          id: '3',
+          amount: 20000,
+          category: 'Tips',
+          transactionDate: now,
+          createdAt: now,
+          updatedAt: now,
+        ),
       ];
 
       final state = FinancialCalculator.calculateState(
@@ -59,7 +80,14 @@ void main() {
     // 3. Expenses reducing Cash Available
     test('3. Actual expenses reduce Cash Available', () {
       final incomes = [
-        IncomeTransaction(id: '1', amount: 200000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now),
+        IncomeTransaction(
+          id: '1',
+          amount: 200000,
+          category: 'Gojek',
+          transactionDate: now,
+          createdAt: now,
+          updatedAt: now,
+        ),
       ];
       final expenses = [
         ExpenseTransaction(
@@ -93,7 +121,14 @@ void main() {
     // 4. Allocations securing money
     test('4. Allocations secure money away from Free Cash', () {
       final incomes = [
-        IncomeTransaction(id: '1', amount: 600000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now),
+        IncomeTransaction(
+          id: '1',
+          amount: 600000,
+          category: 'Gojek',
+          transactionDate: now,
+          createdAt: now,
+          updatedAt: now,
+        ),
       ];
       final allocations = [
         AllocationTransaction(
@@ -145,7 +180,16 @@ void main() {
       ];
 
       final state = FinancialCalculator.calculateState(
-        incomeList: [IncomeTransaction(id: '1', amount: 600000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now)],
+        incomeList: [
+          IncomeTransaction(
+            id: '1',
+            amount: 600000,
+            category: 'Gojek',
+            transactionDate: now,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        ],
         expenseList: [],
         allocationList: allocations,
         obligationList: [ob],
@@ -164,99 +208,146 @@ void main() {
     });
 
     // 6. Obligation payment & FI-004 overpayment prevention
-    test('6. Obligation payment updates status & prevents overpayment (FI-004)', () {
-      final ob = ObligationDefinition(
-        id: 'ob-listrik',
-        name: 'Listrik',
-        targetAmount: 100000,
-        dueDate: now.add(const Duration(days: 5)),
-        category: 'Rumah',
-        type: ObligationDefinitionType.bulanan,
-        createdAt: now,
-        updatedAt: now,
-      );
-      final payments = [
-        ObligationPayment(
-          id: 'p1',
-          obligationId: 'ob-listrik',
-          amount: 100000,
-          paymentDate: now,
+    test(
+      '6. Obligation payment updates status & prevents overpayment (FI-004)',
+      () {
+        final ob = ObligationDefinition(
+          id: 'ob-listrik',
+          name: 'Listrik',
+          targetAmount: 100000,
+          dueDate: now.add(const Duration(days: 5)),
+          category: 'Rumah',
+          type: ObligationDefinitionType.bulanan,
           createdAt: now,
           updatedAt: now,
-        ),
-      ];
+        );
+        final payments = [
+          ObligationPayment(
+            id: 'p1',
+            obligationId: 'ob-listrik',
+            amount: 100000,
+            paymentDate: now,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        ];
 
-      final state = FinancialCalculator.calculateState(
-        incomeList: [IncomeTransaction(id: '1', amount: 200000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now)],
-        expenseList: [],
-        allocationList: [],
-        obligationList: [ob],
-        paymentList: payments,
-        todayDate: now,
-      );
+        final state = FinancialCalculator.calculateState(
+          incomeList: [
+            IncomeTransaction(
+              id: '1',
+              amount: 200000,
+              category: 'Gojek',
+              transactionDate: now,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          ],
+          expenseList: [],
+          allocationList: [],
+          obligationList: [ob],
+          paymentList: payments,
+          todayDate: now,
+        );
 
-      final summary = state.obligationSummaries.first;
-      expect(summary.paidAmount, 100000);
-      expect(summary.remainingAmount, 0);
-      expect(summary.status, ObligationStatus.paid);
+        final summary = state.obligationSummaries.first;
+        expect(summary.paidAmount, 100000);
+        expect(summary.remainingAmount, 0);
+        expect(summary.status, ObligationStatus.paid);
 
-      // Verify FI-004
-      final isValidOverpay = FinancialCalculator.validateObligationPayment(
-        currentPaidAmount: 100000,
-        targetAmount: 100000,
-        newPaymentAmount: 50000,
-      );
-      expect(isValidOverpay, false);
-    });
+        // Verify FI-004
+        final isValidOverpay = FinancialCalculator.validateObligationPayment(
+          currentPaidAmount: 100000,
+          targetAmount: 100000,
+          newPaymentAmount: 50000,
+        );
+        expect(isValidOverpay, false);
+      },
+    );
 
     // 7. Emergency spending consuming allocation (PRD Section 19 & 44)
-    test('7. Emergency spending consuming allocation updates state correctly', () {
-      // Setup: Income 600k, Allocation Motor 500k, Free Cash 100k
-      final incomes = [IncomeTransaction(id: '1', amount: 600000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now)];
-      final allocations = [
-        AllocationTransaction(id: 'a1', obligationId: 'ob-motor', amount: 500000, allocationDate: now, createdAt: now, updatedAt: now),
-      ];
-      // Emergency expense 150k: 100k from Free, 50k from Motor Allocation
-      final expenses = [
-        ExpenseTransaction(
-          id: 'e1',
-          amount: 150000,
-          category: 'Kesehatan (Anak Sakit)',
-          transactionDate: now,
-          source: ExpenseSource.mixed,
-          freeAmountUsed: 100000,
-          allocatedAmountUsed: 50000,
-          targetObligationId: 'ob-motor',
-          createdAt: now,
-          updatedAt: now,
-        ),
-      ];
+    test(
+      '7. Emergency spending consuming allocation updates state correctly',
+      () {
+        // Setup: Income 600k, Allocation Motor 500k, Free Cash 100k
+        final incomes = [
+          IncomeTransaction(
+            id: '1',
+            amount: 600000,
+            category: 'Gojek',
+            transactionDate: now,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        ];
+        final allocations = [
+          AllocationTransaction(
+            id: 'a1',
+            obligationId: 'ob-motor',
+            amount: 500000,
+            allocationDate: now,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        ];
+        // Emergency expense 150k: 100k from Free, 50k from Motor Allocation
+        final expenses = [
+          ExpenseTransaction(
+            id: 'e1',
+            amount: 150000,
+            category: 'Kesehatan (Anak Sakit)',
+            transactionDate: now,
+            source: ExpenseSource.mixed,
+            freeAmountUsed: 100000,
+            allocatedAmountUsed: 50000,
+            targetObligationId: 'ob-motor',
+            createdAt: now,
+            updatedAt: now,
+          ),
+        ];
 
-      // Update allocation to mark 50k used
-      final updatedAllocations = [
-        allocations.first.copyWith(usedAmount: 50000),
-      ];
+        // Update allocation to mark 50k used
+        final updatedAllocations = [
+          allocations.first.copyWith(usedAmount: 50000),
+        ];
 
-      final state = FinancialCalculator.calculateState(
-        incomeList: incomes,
-        expenseList: expenses,
-        allocationList: updatedAllocations,
-        obligationList: [],
-        paymentList: [],
-        todayDate: now,
-      );
+        final state = FinancialCalculator.calculateState(
+          incomeList: incomes,
+          expenseList: expenses,
+          allocationList: updatedAllocations,
+          obligationList: [],
+          paymentList: [],
+          todayDate: now,
+        );
 
-      expect(state.cashAvailable, 450000); // 600k - 150k
-      expect(state.totalActiveAllocation, 450000); // 500k - 50k used
-      expect(state.freeCash, 0);
-      expect(state.allocationShortfall, 0);
-    });
+        expect(state.cashAvailable, 450000); // 600k - 150k
+        expect(state.totalActiveAllocation, 450000); // 500k - 50k used
+        expect(state.freeCash, 0);
+        expect(state.allocationShortfall, 0);
+      },
+    );
 
     // 8. Expense from free cash
     test('8. Expense from free cash only reduces free cash', () {
-      final incomes = [IncomeTransaction(id: '1', amount: 600000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now)];
+      final incomes = [
+        IncomeTransaction(
+          id: '1',
+          amount: 600000,
+          category: 'Gojek',
+          transactionDate: now,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ];
       final allocations = [
-        AllocationTransaction(id: 'a1', obligationId: 'ob-1', amount: 400000, allocationDate: now, createdAt: now, updatedAt: now),
+        AllocationTransaction(
+          id: 'a1',
+          obligationId: 'ob-1',
+          amount: 400000,
+          allocationDate: now,
+          createdAt: now,
+          updatedAt: now,
+        ),
       ];
       final expenses = [
         ExpenseTransaction(
@@ -288,46 +379,82 @@ void main() {
     });
 
     // 9. Expense from allocated cash
-    test('9. Expense from allocated cash reduces allocation & cash available', () {
-      final incomes = [IncomeTransaction(id: '1', amount: 600000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now)];
-      final allocations = [
-        AllocationTransaction(id: 'a1', obligationId: 'ob-servis', amount: 150000, usedAmount: 85000, allocationDate: now, createdAt: now, updatedAt: now),
-      ];
-      final expenses = [
-        ExpenseTransaction(
-          id: 'e1',
-          amount: 85000,
-          category: 'Servis Motor',
+    test(
+      '9. Expense from allocated cash reduces allocation & cash available',
+      () {
+        final incomes = [
+          IncomeTransaction(
+            id: '1',
+            amount: 600000,
+            category: 'Gojek',
+            transactionDate: now,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        ];
+        final allocations = [
+          AllocationTransaction(
+            id: 'a1',
+            obligationId: 'ob-servis',
+            amount: 150000,
+            usedAmount: 85000,
+            allocationDate: now,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        ];
+        final expenses = [
+          ExpenseTransaction(
+            id: 'e1',
+            amount: 85000,
+            category: 'Servis Motor',
+            transactionDate: now,
+            source: ExpenseSource.allocated,
+            freeAmountUsed: 0,
+            allocatedAmountUsed: 85000,
+            targetObligationId: 'ob-servis',
+            createdAt: now,
+            updatedAt: now,
+          ),
+        ];
+
+        final state = FinancialCalculator.calculateState(
+          incomeList: incomes,
+          expenseList: expenses,
+          allocationList: allocations,
+          obligationList: [],
+          paymentList: [],
+          todayDate: now,
+        );
+
+        expect(state.cashAvailable, 515000); // 600k - 85k
+        expect(state.totalActiveAllocation, 65000); // 150k - 85k
+        expect(state.freeCash, 450000); // 515k - 65k
+      },
+    );
+
+    // 10. Allocation Shortfall detection (PRD Section 30 & FI-006)
+    test('10. Allocation Shortfall triggers when Allocated > Cash Available', () {
+      final incomes = [
+        IncomeTransaction(
+          id: '1',
+          amount: 600000,
+          category: 'Gojek',
           transactionDate: now,
-          source: ExpenseSource.allocated,
-          freeAmountUsed: 0,
-          allocatedAmountUsed: 85000,
-          targetObligationId: 'ob-servis',
           createdAt: now,
           updatedAt: now,
         ),
       ];
-
-      final state = FinancialCalculator.calculateState(
-        incomeList: incomes,
-        expenseList: expenses,
-        allocationList: allocations,
-        obligationList: [],
-        paymentList: [],
-        todayDate: now,
-      );
-
-      expect(state.cashAvailable, 515000); // 600k - 85k
-      expect(state.totalActiveAllocation, 65000); // 150k - 85k
-      expect(state.freeCash, 450000); // 515k - 65k
-    });
-
-    // 10. Allocation Shortfall detection (PRD Section 30 & FI-006)
-    test('10. Allocation Shortfall triggers when Allocated > Cash Available', () {
-      final incomes = [IncomeTransaction(id: '1', amount: 600000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now)];
       // User allocated 600k
       final allocations = [
-        AllocationTransaction(id: 'a1', obligationId: 'ob-1', amount: 600000, allocationDate: now, createdAt: now, updatedAt: now),
+        AllocationTransaction(
+          id: 'a1',
+          obligationId: 'ob-1',
+          amount: 600000,
+          allocationDate: now,
+          createdAt: now,
+          updatedAt: now,
+        ),
       ];
       // Sudden expense 100k recorded without reducing allocation record directly
       final expenses = [
@@ -378,7 +505,16 @@ void main() {
       ];
 
       final state = FinancialCalculator.calculateState(
-        incomeList: [IncomeTransaction(id: '1', amount: 2900000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now)],
+        incomeList: [
+          IncomeTransaction(
+            id: '1',
+            amount: 2900000,
+            category: 'Gojek',
+            transactionDate: now,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        ],
         expenseList: [],
         allocationList: [],
         obligationList: [],
@@ -420,58 +556,89 @@ void main() {
     });
 
     // 13. Target achieved status
-    test('13. Target status transitions to ACHIEVED when total income >= target', () {
-      final target = TargetDefinition(
-        id: 't1',
-        monthlyTargetAmount: 4000000,
-        totalWorkingDays: 26,
-        targetMonth: '2026-09',
-        createdAt: now,
-        updatedAt: now,
-      );
+    test(
+      '13. Target status transitions to ACHIEVED when total income >= target',
+      () {
+        final target = TargetDefinition(
+          id: 't1',
+          monthlyTargetAmount: 4000000,
+          totalWorkingDays: 26,
+          targetMonth: '2026-09',
+          createdAt: now,
+          updatedAt: now,
+        );
 
-      final state = FinancialCalculator.calculateState(
-        incomeList: [IncomeTransaction(id: '1', amount: 4200000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now)],
-        expenseList: [],
-        allocationList: [],
-        obligationList: [],
-        paymentList: [],
-        currentTarget: target,
-        todayDate: now,
-      );
+        final state = FinancialCalculator.calculateState(
+          incomeList: [
+            IncomeTransaction(
+              id: '1',
+              amount: 4200000,
+              category: 'Gojek',
+              transactionDate: now,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          ],
+          expenseList: [],
+          allocationList: [],
+          obligationList: [],
+          paymentList: [],
+          currentTarget: target,
+          todayDate: now,
+        );
 
-      expect(state.targetSummary!.status, TargetStatus.achieved);
-      expect(state.targetSummary!.remainingTargetAmount, 0);
-      expect(state.targetSummary!.requiredDailyIncome, 0);
-    });
+        expect(state.targetSummary!.status, TargetStatus.achieved);
+        expect(state.targetSummary!.remainingTargetAmount, 0);
+        expect(state.targetSummary!.requiredDailyIncome, 0);
+      },
+    );
 
     // 14. Target in progress status
-    test('14. Target status is IN_PROGRESS when income is between 0 and target', () {
-      final target = TargetDefinition(
-        id: 't1',
-        monthlyTargetAmount: 4000000,
-        totalWorkingDays: 26,
-        targetMonth: '2026-09',
-        createdAt: now,
-        updatedAt: now,
-      );
+    test(
+      '14. Target status is IN_PROGRESS when income is between 0 and target',
+      () {
+        final target = TargetDefinition(
+          id: 't1',
+          monthlyTargetAmount: 4000000,
+          totalWorkingDays: 26,
+          targetMonth: '2026-09',
+          createdAt: now,
+          updatedAt: now,
+        );
 
-      final state = FinancialCalculator.calculateState(
-        incomeList: [IncomeTransaction(id: '1', amount: 1500000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now)],
-        expenseList: [],
-        allocationList: [],
-        obligationList: [],
-        paymentList: [],
-        currentTarget: target,
-        todayDate: now,
-      );
+        final state = FinancialCalculator.calculateState(
+          incomeList: [
+            IncomeTransaction(
+              id: '1',
+              amount: 1500000,
+              category: 'Gojek',
+              transactionDate: now,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          ],
+          expenseList: [],
+          allocationList: [],
+          obligationList: [],
+          paymentList: [],
+          currentTarget: target,
+          todayDate: now,
+        );
 
-      expect(state.targetSummary!.status, TargetStatus.inProgress);
-    });
+        expect(state.targetSummary!.status, TargetStatus.inProgress);
+      },
+    );
 
     // 15. Transaction edits recalculate state
     test('15. Transaction edit recalculates financial state cleanly', () {
-      final originalIncome = IncomeTransaction(id: '1', amount: 200000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now);
+      final originalIncome = IncomeTransaction(
+        id: '1',
+        amount: 200000,
+        category: 'Gojek',
+        transactionDate: now,
+        createdAt: now,
+        updatedAt: now,
+      );
       final editedIncome = originalIncome.copyWith(amount: 250000);
 
       final stateBefore = FinancialCalculator.calculateState(
@@ -496,24 +663,43 @@ void main() {
     });
 
     // 16. Transaction deletion handling (PRD Section 37)
-    test('16. Soft-deleted transactions are ignored from financial calculation', () {
-      final incomes = [
-        IncomeTransaction(id: '1', amount: 200000, category: 'Gojek', transactionDate: now, status: TransactionStatus.active, createdAt: now, updatedAt: now),
-        IncomeTransaction(id: '2', amount: 300000, category: 'Grab', transactionDate: now, status: TransactionStatus.deleted, createdAt: now, updatedAt: now),
-      ];
+    test(
+      '16. Soft-deleted transactions are ignored from financial calculation',
+      () {
+        final incomes = [
+          IncomeTransaction(
+            id: '1',
+            amount: 200000,
+            category: 'Gojek',
+            transactionDate: now,
+            status: TransactionStatus.active,
+            createdAt: now,
+            updatedAt: now,
+          ),
+          IncomeTransaction(
+            id: '2',
+            amount: 300000,
+            category: 'Grab',
+            transactionDate: now,
+            status: TransactionStatus.deleted,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        ];
 
-      final state = FinancialCalculator.calculateState(
-        incomeList: incomes,
-        expenseList: [],
-        allocationList: [],
-        obligationList: [],
-        paymentList: [],
-        todayDate: now,
-      );
+        final state = FinancialCalculator.calculateState(
+          incomeList: incomes,
+          expenseList: [],
+          allocationList: [],
+          obligationList: [],
+          paymentList: [],
+          todayDate: now,
+        );
 
-      expect(state.totalIncome, 200000);
-      expect(state.cashAvailable, 200000);
-    });
+        expect(state.totalIncome, 200000);
+        expect(state.cashAvailable, 200000);
+      },
+    );
 
     // 17. Data clear / empty state
     test('17. Empty state initializes safely to zeros', () {
@@ -560,13 +746,30 @@ void main() {
     });
 
     // 19. Integer IDR rounding
-    test('19. Integer IDR values maintained without floating point corruption', () {
-      final income = IncomeTransaction(id: '1', amount: 153846, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now);
-      final expense = IncomeTransaction(id: '2', amount: 45000, category: 'Makan', transactionDate: now, createdAt: now, updatedAt: now);
+    test(
+      '19. Integer IDR values maintained without floating point corruption',
+      () {
+        final income = IncomeTransaction(
+          id: '1',
+          amount: 153846,
+          category: 'Gojek',
+          transactionDate: now,
+          createdAt: now,
+          updatedAt: now,
+        );
+        final expense = IncomeTransaction(
+          id: '2',
+          amount: 45000,
+          category: 'Makan',
+          transactionDate: now,
+          createdAt: now,
+          updatedAt: now,
+        );
 
-      expect(income.amount.isFinite, true);
-      expect(expense.amount.runtimeType, int);
-    });
+        expect(income.amount.isFinite, true);
+        expect(expense.amount.runtimeType, int);
+      },
+    );
 
     // 20. Multiple obligations sorted by due date priority (PRD Section 21)
     test('20. Multiple obligations sorted by due date priority', () {
@@ -600,7 +803,10 @@ void main() {
         todayDate: now,
       );
 
-      expect(state.obligationSummaries.first.id, 'ob-listrik'); // Listrik due in 3 days comes first!
+      expect(
+        state.obligationSummaries.first.id,
+        'ob-listrik',
+      ); // Listrik due in 3 days comes first!
       expect(state.obligationSummaries.last.id, 'ob-motor');
     });
     // 21. Start Balance affects Cash Available and Free Cash
@@ -616,7 +822,14 @@ void main() {
       );
 
       final incomes = [
-        IncomeTransaction(id: '1', amount: 200000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now),
+        IncomeTransaction(
+          id: '1',
+          amount: 200000,
+          category: 'Gojek',
+          transactionDate: now,
+          createdAt: now,
+          updatedAt: now,
+        ),
       ];
       final expenses = [
         ExpenseTransaction(
@@ -651,7 +864,16 @@ void main() {
     // 22. Start Balance defaults to 0 when no target is set
     test('22. Start Balance defaults to 0 when no currentTarget', () {
       final state = FinancialCalculator.calculateState(
-        incomeList: [IncomeTransaction(id: '1', amount: 100000, category: 'Gojek', transactionDate: now, createdAt: now, updatedAt: now)],
+        incomeList: [
+          IncomeTransaction(
+            id: '1',
+            amount: 100000,
+            category: 'Gojek',
+            transactionDate: now,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        ],
         expenseList: [],
         allocationList: [],
         obligationList: [],
@@ -661,6 +883,157 @@ void main() {
 
       expect(state.startBalance, 0);
       expect(state.cashAvailable, 100000);
+    });
+
+    // 23. Multi-wallet balance calculation and transfer (PRD Section 49)
+    test('23. Multi-wallet balance calculation and transfer', () {
+      final wCash = Wallet(
+        id: 'w_cash',
+        name: 'Tunai',
+        isDefault: true,
+        createdAt: now,
+        updatedAt: now,
+      );
+      final wGopay = Wallet(
+        id: 'w_gopay',
+        name: 'GoPay',
+        isDefault: false,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final incomes = [
+        IncomeTransaction(
+          id: 'i1',
+          amount: 300000,
+          category: 'Gojek',
+          walletId: 'w_cash',
+          transactionDate: now,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        IncomeTransaction(
+          id: 'i2',
+          amount: 200000,
+          category: 'Grab',
+          walletId: 'w_gopay',
+          transactionDate: now,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ];
+      final transfers = [
+        WalletTransfer(
+          id: 't1',
+          fromWalletId: 'w_cash',
+          toWalletId: 'w_gopay',
+          amount: 50000,
+          transferDate: now,
+          createdAt: now,
+        ),
+      ];
+
+      final state = FinancialCalculator.calculateState(
+        incomeList: incomes,
+        expenseList: [],
+        allocationList: [],
+        obligationList: [],
+        paymentList: [],
+        wallets: [wCash, wGopay],
+        transfers: transfers,
+        todayDate: now,
+      );
+
+      // w_cash: 300,000 - 50,000 = 250,000
+      expect(state.walletBalances['w_cash'], 250000);
+      // w_gopay: 200,000 + 50,000 = 250,000
+      expect(state.walletBalances['w_gopay'], 250000);
+    });
+
+    // 24. Multi-wallet obligation split payment (PRD Section 49.3)
+    test('24. Multi-wallet obligation split payment', () {
+      final wCash = Wallet(
+        id: 'w_cash',
+        name: 'Tunai',
+        isDefault: true,
+        createdAt: now,
+        updatedAt: now,
+      );
+      final wGopay = Wallet(
+        id: 'w_gopay',
+        name: 'GoPay',
+        isDefault: false,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final incomes = [
+        IncomeTransaction(
+          id: 'i1',
+          amount: 500000,
+          category: 'Gojek',
+          walletId: 'w_cash',
+          transactionDate: now,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        IncomeTransaction(
+          id: 'i2',
+          amount: 500000,
+          category: 'Grab',
+          walletId: 'w_gopay',
+          transactionDate: now,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ];
+      final ob = ObligationDefinition(
+        id: 'ob-1',
+        name: 'Cicilan Motor',
+        targetAmount: 500000,
+        dueDate: now.add(const Duration(days: 5)),
+        category: 'Motor',
+        type: ObligationDefinitionType.bulanan,
+        createdAt: now,
+        updatedAt: now,
+      );
+      final payment = ObligationPayment(
+        id: 'p1',
+        obligationId: 'ob-1',
+        amount: 500000,
+        paymentDate: now,
+        splits: [
+          const ObligationPaymentSplit(
+            id: 's1',
+            paymentId: 'p1',
+            walletId: 'w_cash',
+            amount: 300000,
+          ),
+          const ObligationPaymentSplit(
+            id: 's2',
+            paymentId: 'p1',
+            walletId: 'w_gopay',
+            amount: 200000,
+          ),
+        ],
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final state = FinancialCalculator.calculateState(
+        incomeList: incomes,
+        expenseList: [],
+        allocationList: [],
+        obligationList: [ob],
+        paymentList: [payment],
+        wallets: [wCash, wGopay],
+        todayDate: now,
+      );
+
+      // w_cash: 500,000 - 300,000 = 200,000
+      expect(state.walletBalances['w_cash'], 200000);
+      // w_gopay: 500,000 - 200,000 = 300,000
+      expect(state.walletBalances['w_gopay'], 300000);
     });
   });
 }

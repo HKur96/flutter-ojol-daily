@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ojol_daily/core/widgets/custom_text_form_field.dart';
 import 'package:ojol_daily/presentation/screens/financial_setup_screen.dart';
+import 'package:ojol_daily/presentation/screens/wallet_management_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/financial_provider.dart';
 import '../theme/app_theme.dart';
@@ -295,6 +296,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
 
               const SizedBox(height: 16),
+
+              // Manajemen Dompet Card
+              Card(
+                child: ListTile(
+                  leading: const Icon(
+                    Icons.account_balance_wallet,
+                    color: AppColors.primary,
+                  ),
+                  title: const Text(
+                    "Manajemen Dompet (Multi-Dompet)",
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  subtitle: const Text(
+                    "Kelola dompet Tunai, GoPay, BCA & Transfer",
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const WalletManagementScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Backup & Restore Card
               Card(
                 child: ListTile(
                   leading: const Icon(

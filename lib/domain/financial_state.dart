@@ -2,6 +2,7 @@
 library;
 
 import 'enums.dart';
+import 'wallet.dart';
 
 class ObligationSummary {
   final String id;
@@ -70,6 +71,9 @@ class FinancialState {
   final TargetSummary? targetSummary;
   final double expenseToIncomeRatio; // (totalExpense / totalIncome) * 100
   final double fuelToIncomeRatio; // (fuelExpense / totalIncome) * 100
+  final List<Wallet> wallets;
+  final Map<String, int> walletBalances; // walletId -> current balance
+  final List<WalletTransfer> transfers;
 
   const FinancialState({
     required this.totalIncome,
@@ -84,6 +88,9 @@ class FinancialState {
     this.targetSummary,
     required this.expenseToIncomeRatio,
     required this.fuelToIncomeRatio,
+    this.wallets = const [],
+    this.walletBalances = const {},
+    this.transfers = const [],
   });
 
   ObligationSummary? get obligationShortestDue {
@@ -110,6 +117,9 @@ class FinancialState {
       targetSummary: null,
       expenseToIncomeRatio: 0.0,
       fuelToIncomeRatio: 0.0,
+      wallets: [],
+      walletBalances: {},
+      transfers: [],
     );
   }
 }

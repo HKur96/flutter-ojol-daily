@@ -28,6 +28,8 @@ class FinancialProvider extends ChangeNotifier {
   List<ObligationDefinition> _obligations = [];
   List<ObligationPayment> _payments = [];
   List<DayActivity> _dayActivities = [];
+  List<Wallet> _wallets = [];
+  List<WalletTransfer> _transfers = [];
   TargetDefinition? _currentTarget;
   ReminderSettings _reminderSettings = const ReminderSettings();
   ReminderLog? _todayReminderLog;
@@ -38,6 +40,8 @@ class FinancialProvider extends ChangeNotifier {
   List<ObligationDefinition> get obligations => _obligations;
   List<ObligationPayment> get payments => _payments;
   List<DayActivity> get dayActivities => _dayActivities;
+  List<Wallet> get wallets => _wallets;
+  List<WalletTransfer> get transfers => _transfers;
   TargetDefinition? get currentTarget => _currentTarget;
   ReminderSettings get reminderSettings => _reminderSettings;
   ReminderLog? get todayReminderLog => _todayReminderLog;
@@ -96,6 +100,8 @@ class FinancialProvider extends ChangeNotifier {
       _obligations = await repository.getAllObligations();
       _payments = await repository.getAllObligationPayments();
       _dayActivities = await repository.getAllDayActivities();
+      _wallets = await repository.getAllWallets();
+      _transfers = await repository.getAllWalletTransfers();
 
       // Auto-complete obligations that have been fully paid
       for (final ob in _obligations) {
@@ -160,13 +166,67 @@ class FinancialProvider extends ChangeNotifier {
       paymentList: _payments,
       currentTarget: _currentTarget,
       dayActivities: _dayActivities,
+      wallets: _wallets,
+      transfers: _transfers,
     );
+  }
+
+  // --- Wallet Actions ---
+  Future<void> addWallet({
+    required String name,
+    String iconName = 'account_balance_wallet',
+    String colorHex = '#4CAF50',
+    bool isDefault = false,
+  }) async {
+    final now = DateTime.now();
+    final wallet = Wallet(
+      id: 'w_${now.millisecondsSinceEpoch}',
+      name: name,
+      iconName: iconName,
+      colorHex: colorHex,
+      isDefault: isDefault,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await repository.insertWallet(wallet);
+    await loadData();
+  }
+
+  Future<void> updateWallet(Wallet wallet) async {
+    await repository.updateWallet(wallet.copyWith(updatedAt: DateTime.now()));
+    await loadData();
+  }
+
+  Future<void> deleteWallet(String id) async {
+    await repository.deleteWallet(id);
+    await loadData();
+  }
+
+  Future<void> transferBetweenWallets({
+    required String fromWalletId,
+    required String toWalletId,
+    required int amount,
+    String? note,
+  }) async {
+    final now = DateTime.now();
+    final transfer = WalletTransfer(
+      id: 'tf_${now.millisecondsSinceEpoch}',
+      fromWalletId: fromWalletId,
+      toWalletId: toWalletId,
+      amount: amount,
+      transferDate: now,
+      note: note,
+      createdAt: now,
+    );
+    await repository.insertWalletTransfer(transfer);
+    await loadData();
   }
 
   // --- Income Actions ---
   Future<void> addIncome({
     required int amount,
     required String category,
+    String walletId = 'w_cash',
     String? note,
     DateTime? transactionDate,
   }) async {
@@ -175,6 +235,7 @@ class FinancialProvider extends ChangeNotifier {
       id: 'inc_${now.millisecondsSinceEpoch}',
       amount: amount,
       category: category,
+      walletId: walletId,
       note: note,
       transactionDate: transactionDate ?? now,
       createdAt: now,
@@ -201,6 +262,7 @@ class FinancialProvider extends ChangeNotifier {
     required int amount,
     required String category,
     required ExpenseSource source,
+    String walletId = 'w_cash',
     int freeAmountUsed = 0,
     int allocatedAmountUsed = 0,
     String? targetObligationId,
@@ -212,6 +274,7 @@ class FinancialProvider extends ChangeNotifier {
       id: 'exp_${now.millisecondsSinceEpoch}',
       amount: amount,
       category: category,
+      walletId: walletId,
       source: source,
       freeAmountUsed: freeAmountUsed,
       allocatedAmountUsed: allocatedAmountUsed,
@@ -340,6 +403,7 @@ class FinancialProvider extends ChangeNotifier {
   Future<bool> payObligation({
     required String obligationId,
     required int amount,
+    List<ObligationPaymentSplit> splits = const [],
     String? note,
   }) async {
     final obSummary = _state.obligationSummaries.firstWhere(
@@ -362,6 +426,7 @@ class FinancialProvider extends ChangeNotifier {
       amount: amount,
       paymentDate: now,
       note: note,
+      splits: splits,
       createdAt: now,
       updatedAt: now,
     );

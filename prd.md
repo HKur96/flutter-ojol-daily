@@ -2005,3 +2005,35 @@ Ulangi Besok
 Tujuan akhirnya bukan hanya membuat data keuangan lebih lengkap, tetapi membantu pengguna membentuk kebiasaan:
 
 “Setiap uang yang masuk punya tujuan sebelum digunakan.”
+
+---
+
+# 49. Spesifikasi Multi-Dompet (Multi-Wallet) System
+
+## 49.1 Konsep Utama
+Fitur Multi-Dompet memungkinkan pengguna mengelola saldo di beberapa dompet fisik maupun digital (contoh: *Tunai/Cash*, *GoPay*, *OVO*, *Bank BCA*, dll).
+
+- **Entitas Dompet**: Pengguna dapat menambah, mengubah, dan melihat rincian saldo per dompet.
+- **Sumber & Tujuan Transaksi**:
+  - **Pemasukan (Income)**: Menentukan dompet tujuan tempat dana diterima.
+  - **Pengeluaran (Expense)**: Menentukan dompet asal tempat dana dikeluarkan.
+  - **Bayar Kewajiban (Obligation Payment)**: Mendukung pembayaran multi-dompet (*Split Payment*), di mana 1 transaksi pembayaran dapat dibagi ke beberapa dompet sekaligus (misal: 300rb dari GoPay + 200rb dari Tunai).
+- **Transfer Antar Dompet**: Fitur untuk memindahkan dana dari satu dompet ke dompet lain tanpa mempengaruhi total pendapatan/pengeluaran bersih.
+
+## 49.2 Formula Perhitungan Saldo Per Dompet
+Untuk setiap dompet $W$:
+
+```text
+Saldo(W) = SUM(Income ke W)
+           - SUM(Expense dari W)
+           - SUM(Payment Split dari W)
+           - SUM(Transfer Keluar dari W)
+           + SUM(Transfer Masuk ke W)
+```
+
+Total **Available Money** pada aplikasi merupakan jumlah dari saldo seluruh dompet aktif.
+
+## 49.3 Invarian Pembayaran Multi-Dompet (Split Payment)
+1. Ketika membayar kewajiban dengan nominal $X$, total pecahan (*splits*) dari seluruh dompet terpilih harus tepat sama dengan $X$:
+   $$\sum \text{Nominal Split} = X$$
+2. Transaksi disimpan sebagai 1 data `ObligationPayment` utama dengan relasi child `ObligationPaymentSplit` per dompet.

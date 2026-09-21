@@ -122,11 +122,7 @@ class FinancialRepository {
 
   Future<void> deleteObligation(String id) async {
     final db = await dbHelper.database;
-    await db.delete(
-      'obligation_definitions',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.delete('obligation_definitions', where: 'id = ?', whereArgs: [id]);
   }
 
   // --- Obligation Payments ---
@@ -136,12 +132,70 @@ class FinancialRepository {
       'obligation_payments',
       orderBy: 'paymentDate DESC',
     );
-    return maps.map((m) => ObligationPayment.fromMap(m)).toList();
+    final splitMaps = await db.query('obligation_payment_splits');
+    final allSplits = splitMaps
+        .map((m) => ObligationPaymentSplit.fromMap(m))
+        .toList();
+
+    return maps.map((m) {
+      final paymentId = m['id'] as String;
+      final paymentSplits = allSplits
+          .where((s) => s.paymentId == paymentId)
+          .toList();
+      return ObligationPayment.fromMap(m, splits: paymentSplits);
+    }).toList();
   }
 
   Future<void> insertObligationPayment(ObligationPayment payment) async {
     final db = await dbHelper.database;
-    await db.insert('obligation_payments', payment.toMap());
+    await db.transaction((txn) async {
+      await txn.insert('obligation_payments', payment.toMap());
+      for (final split in payment.splits) {
+        await txn.insert('obligation_payment_splits', split.toMap());
+      }
+    });
+  }
+
+  // --- Wallets ---
+  Future<List<Wallet>> getAllWallets() async {
+    final db = await dbHelper.database;
+    final maps = await db.query('wallets', orderBy: 'isDefault DESC, name ASC');
+    return maps.map((m) => Wallet.fromMap(m)).toList();
+  }
+
+  Future<void> insertWallet(Wallet wallet) async {
+    final db = await dbHelper.database;
+    await db.insert('wallets', wallet.toMap());
+  }
+
+  Future<void> updateWallet(Wallet wallet) async {
+    final db = await dbHelper.database;
+    await db.update(
+      'wallets',
+      wallet.toMap(),
+      where: 'id = ?',
+      whereArgs: [wallet.id],
+    );
+  }
+
+  Future<void> deleteWallet(String id) async {
+    final db = await dbHelper.database;
+    await db.delete('wallets', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // --- Wallet Transfers ---
+  Future<List<WalletTransfer>> getAllWalletTransfers() async {
+    final db = await dbHelper.database;
+    final maps = await db.query(
+      'wallet_transfers',
+      orderBy: 'transferDate DESC',
+    );
+    return maps.map((m) => WalletTransfer.fromMap(m)).toList();
+  }
+
+  Future<void> insertWalletTransfer(WalletTransfer transfer) async {
+    final db = await dbHelper.database;
+    await db.insert('wallet_transfers', transfer.toMap());
   }
 
   // --- Target Definitions ---

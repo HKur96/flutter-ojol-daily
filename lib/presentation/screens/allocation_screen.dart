@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:ojol_daily/core/config/enum.dart';
 import 'package:ojol_daily/core/config/extension.dart';
 import 'package:ojol_daily/core/utils/currency_formatter.dart';
-import 'package:ojol_daily/core/utils/currency_input_formatter.dart';
 import 'package:ojol_daily/core/widgets/custom_text_form_field.dart';
 import 'package:ojol_daily/core/widgets/empty_state_widget.dart';
 import 'package:ojol_daily/domain/enums.dart';
@@ -13,6 +11,8 @@ import 'package:ojol_daily/domain/models.dart';
 import 'package:provider/provider.dart';
 import '../providers/financial_provider.dart';
 import '../theme/app_theme.dart';
+
+import '../widgets/pay_obligation_sheet.dart';
 
 class AllocationScreen extends StatelessWidget {
   const AllocationScreen({super.key});
@@ -572,78 +572,14 @@ class AllocationScreen extends StatelessWidget {
       return;
     }
 
-    final amountController = TextEditingController();
-
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: Text("Bayar Kewajiban: ${ob.name}"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Sisa yang harus dibayar: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ').format(remaining)}",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(height: 12),
-              CustomTextFormField(
-                controller: amountController,
-                labelText: "Jumlah Pembayaran",
-                hintText: "Masukkan jumlah pembayaran",
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  CurrencyInputFormatter(),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text("Batal"),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () async {
-                final amount = int.tryParse(
-                  amountController.text.replaceAll('.', '').replaceAll(',', ''),
-                );
-                if (amount != null && amount > 0 && amount <= remaining) {
-                  await provider.payObligation(
-                    obligationId: ob.id,
-                    amount: amount,
-                    note: "Pembayaran cicilan",
-                  );
-                  if (ctx.mounted) {
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          "Pembayaran sebesar ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ').format(amount)} berhasil ditambahkan",
-                        ),
-                      ),
-                    );
-                  }
-                }
-              },
-              child: const Text(
-                "Bayar",
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-            ),
-          ],
-        );
-      },
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => PayObligationSheet(obligation: ob),
     );
   }
 

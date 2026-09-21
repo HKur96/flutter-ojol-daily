@@ -6,7 +6,7 @@ import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
   static const String _dbName = 'ojol_daily.db';
-  static const int _dbVersion = 3;
+  static const int _dbVersion = 4;
 
   static Database? _database;
   final Database? customDatabase;
@@ -41,6 +41,7 @@ class DatabaseHelper {
         category TEXT NOT NULL,
         note TEXT,
         transactionDate TEXT NOT NULL,
+        walletId TEXT NOT NULL DEFAULT 'w_cash',
         status TEXT NOT NULL,
         createdAt TEXT NOT NULL,
         updatedAt TEXT NOT NULL
@@ -55,6 +56,7 @@ class DatabaseHelper {
         category TEXT NOT NULL,
         note TEXT,
         transactionDate TEXT NOT NULL,
+        walletId TEXT NOT NULL DEFAULT 'w_cash',
         source TEXT NOT NULL,
         freeAmountUsed INTEGER NOT NULL,
         allocatedAmountUsed INTEGER NOT NULL,
@@ -155,6 +157,75 @@ class DatabaseHelper {
         secondReminderSentAt TEXT
       )
     ''');
+
+    // Wallets table (PRD Section 49)
+    await db.execute('''
+      CREATE TABLE wallets (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        iconName TEXT NOT NULL DEFAULT 'account_balance_wallet',
+        colorHex TEXT NOT NULL DEFAULT '#4CAF50',
+        isDefault INTEGER NOT NULL DEFAULT 0,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL
+      )
+    ''');
+
+    // Obligation Payment Splits table
+    await db.execute('''
+      CREATE TABLE obligation_payment_splits (
+        id TEXT PRIMARY KEY,
+        paymentId TEXT NOT NULL,
+        walletId TEXT NOT NULL,
+        amount INTEGER NOT NULL
+      )
+    ''');
+
+    // Wallet Transfers table
+    await db.execute('''
+      CREATE TABLE wallet_transfers (
+        id TEXT PRIMARY KEY,
+        fromWalletId TEXT NOT NULL,
+        toWalletId TEXT NOT NULL,
+        amount INTEGER NOT NULL,
+        transferDate TEXT NOT NULL,
+        note TEXT,
+        createdAt TEXT NOT NULL
+      )
+    ''');
+
+    await _seedDefaultWallets(db);
+  }
+
+  Future<void> _seedDefaultWallets(Database db) async {
+    final now = DateTime.now().toIso8601String();
+    await db.insert('wallets', {
+      'id': 'w_cash',
+      'name': 'Tunai',
+      'iconName': 'payments',
+      'colorHex': '#4CAF50',
+      'isDefault': 1,
+      'createdAt': now,
+      'updatedAt': now,
+    });
+    await db.insert('wallets', {
+      'id': 'w_gopay',
+      'name': 'GoPay',
+      'iconName': 'phone_android',
+      'colorHex': '#00AED6',
+      'isDefault': 0,
+      'createdAt': now,
+      'updatedAt': now,
+    });
+    await db.insert('wallets', {
+      'id': 'w_bca',
+      'name': 'Bank BCA',
+      'iconName': 'account_balance',
+      'colorHex': '#005CA9',
+      'isDefault': 0,
+      'createdAt': now,
+      'updatedAt': now,
+    });
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -167,6 +238,55 @@ class DatabaseHelper {
       try {
         await db.execute("ALTER TABLE target_definitions ADD COLUMN startBalance INTEGER NOT NULL DEFAULT 0");
       } catch (_) {}
+    }
+    if (oldVersion < 4) {
+      try {
+        await db.execute("ALTER TABLE income_transactions ADD COLUMN walletId TEXT NOT NULL DEFAULT 'w_cash'");
+      } catch (_) {}
+      try {
+        await db.execute("ALTER TABLE expense_transactions ADD COLUMN walletId TEXT NOT NULL DEFAULT 'w_cash'");
+      } catch (_) {}
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS wallets (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            iconName TEXT NOT NULL DEFAULT 'account_balance_wallet',
+            colorHex TEXT NOT NULL DEFAULT '#4CAF50',
+            isDefault INTEGER NOT NULL DEFAULT 0,
+            createdAt TEXT NOT NULL,
+            updatedAt TEXT NOT NULL
+          )
+        ''');
+      } catch (_) {}
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS obligation_payment_splits (
+            id TEXT PRIMARY KEY,
+            paymentId TEXT NOT NULL,
+            walletId TEXT NOT NULL,
+            amount INTEGER NOT NULL
+          )
+        ''');
+      } catch (_) {}
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS wallet_transfers (
+            id TEXT PRIMARY KEY,
+            fromWalletId TEXT NOT NULL,
+            toWalletId TEXT NOT NULL,
+            amount INTEGER NOT NULL,
+            transferDate TEXT NOT NULL,
+            note TEXT,
+            createdAt TEXT NOT NULL
+          )
+        ''');
+      } catch (_) {}
+
+      final count = Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM wallets"));
+      if (count == 0 || count == null) {
+        await _seedDefaultWallets(db);
+      }
     }
   }
 
@@ -182,5 +302,9 @@ class DatabaseHelper {
     await db.delete('day_activities');
     await db.delete('reminder_settings');
     await db.delete('reminder_logs');
+    await db.delete('wallets');
+    await db.delete('obligation_payment_splits');
+    await db.delete('wallet_transfers');
+    await _seedDefaultWallets(db);
   }
 }
