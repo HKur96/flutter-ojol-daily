@@ -126,10 +126,7 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
     ];
   }
 
-  Future<DateTime?> _selectDate(
-    int index,
-    TextEditingController controller,
-  ) async {
+  Future<DateTime?> _selectDate(TextEditingController controller) async {
     final now = DateTime.now();
     final DateTime initialDate = now;
     final DateTime firstDate = now;
@@ -745,10 +742,7 @@ class _FinancialSetupScreenState extends State<FinancialSetupScreen> {
                 },
                 textInputAction: TextInputAction.done,
                 onTap: () async {
-                  final pickedDate = await _selectDate(
-                    index,
-                    ob.dueDateController,
-                  );
+                  final pickedDate = await _selectDate(ob.dueDateController);
 
                   if (pickedDate == null) return;
 

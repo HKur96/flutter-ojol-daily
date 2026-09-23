@@ -71,6 +71,35 @@ class FinancialProvider extends ChangeNotifier {
         .fold<int>(0, (sum, e) => sum + e.amount);
   }
 
+  /// Total active income per day for current week (Monday to Sunday)
+  List<double> get weeklyIncomes {
+    final now = DateTime.now();
+    final monday = DateTime(now.year, now.month, now.day).subtract(
+      Duration(days: now.weekday - 1),
+    );
+    final List<double> result = List.filled(7, 0.0);
+
+    for (int i = 0; i < 7; i++) {
+      final dayDate = monday.add(Duration(days: i));
+      final dayStr = DateFormat('yyyy-MM-dd').format(dayDate);
+      final dayTotal = _incomes
+          .where(
+            (inc) =>
+                inc.status == TransactionStatus.active &&
+                DateFormat('yyyy-MM-dd').format(inc.transactionDate) == dayStr,
+          )
+          .fold<int>(0, (sum, inc) => sum + inc.amount);
+      result[i] = dayTotal.toDouble();
+    }
+
+    return result;
+  }
+
+  /// Sum of all active incomes in the current week (Monday to Sunday)
+  int get totalWeeklyIncome {
+    return weeklyIncomes.fold<double>(0.0, (sum, val) => sum + val).toInt();
+  }
+
   DayStatus get todayDayStatus {
     final now = DateTime.now();
     final todayStr = DateFormat('yyyy-MM-dd').format(now);
@@ -231,9 +260,9 @@ class FinancialProvider extends ChangeNotifier {
   Future<void> addIncome({
     required int amount,
     required String category,
+    required DateTime transactionDate,
     String walletId = 'w_cash',
     String? note,
-    DateTime? transactionDate,
   }) async {
     final now = DateTime.now();
     final income = IncomeTransaction(
@@ -242,7 +271,7 @@ class FinancialProvider extends ChangeNotifier {
       category: category,
       walletId: walletId,
       note: note,
-      transactionDate: transactionDate ?? now,
+      transactionDate: transactionDate,
       createdAt: now,
       updatedAt: now,
     );
@@ -267,12 +296,12 @@ class FinancialProvider extends ChangeNotifier {
     required int amount,
     required String category,
     required ExpenseSource source,
+    required DateTime transactionDate,
     String walletId = 'w_cash',
     int freeAmountUsed = 0,
     int allocatedAmountUsed = 0,
     String? targetObligationId,
     String? note,
-    DateTime? transactionDate,
   }) async {
     final now = DateTime.now();
     final expense = ExpenseTransaction(
@@ -285,7 +314,7 @@ class FinancialProvider extends ChangeNotifier {
       allocatedAmountUsed: allocatedAmountUsed,
       targetObligationId: targetObligationId,
       note: note,
-      transactionDate: transactionDate ?? now,
+      transactionDate: transactionDate,
       createdAt: now,
       updatedAt: now,
     );

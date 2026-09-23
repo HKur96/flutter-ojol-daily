@@ -141,7 +141,7 @@ class _FinanceHistoryWidgetState extends State<FinanceHistoryWidget> {
           title: inc.category,
           categoryOrSubtitle: 'Pendapatan',
           amount: inc.amount,
-          date: inc.transactionDate,
+          transactionDate: inc.transactionDate,
           type: ActivityType.income,
           note: inc.note,
         ),
@@ -162,7 +162,7 @@ class _FinanceHistoryWidgetState extends State<FinanceHistoryWidget> {
           title: exp.category,
           categoryOrSubtitle: sourceLabel,
           amount: exp.amount,
-          date: exp.transactionDate,
+          transactionDate: exp.transactionDate,
           type: ActivityType.expense,
           note: exp.note,
         ),
@@ -193,7 +193,7 @@ class _FinanceHistoryWidgetState extends State<FinanceHistoryWidget> {
           title: 'Bayar $obName',
           categoryOrSubtitle: 'Pembayaran Kewajiban',
           amount: pay.amount,
-          date: pay.paymentDate,
+          transactionDate: pay.paymentDate,
           type: ActivityType.obligationPayment,
           note: pay.note,
         ),
@@ -223,7 +223,7 @@ class _FinanceHistoryWidgetState extends State<FinanceHistoryWidget> {
           title: 'Alokasi',
           categoryOrSubtitle: 'Alokasi $obName',
           amount: alloc.amount,
-          date: alloc.createdAt,
+          transactionDate: alloc.allocationDate,
           type: ActivityType.allocation,
           note: alloc.note,
         ),
@@ -231,7 +231,7 @@ class _FinanceHistoryWidgetState extends State<FinanceHistoryWidget> {
     }
 
     // Sort descending by date
-    items.sort((a, b) => b.date.compareTo(a.date));
+    items.sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
     return items;
   }
 
@@ -241,15 +241,15 @@ class _FinanceHistoryWidgetState extends State<FinanceHistoryWidget> {
     return allItems.where((item) {
       switch (_selectedFilter) {
         case ActivityPeriodFilter.today:
-          return item.date.year == now.year &&
-              item.date.month == now.month &&
-              item.date.day == now.day;
+          return item.transactionDate.year == now.year &&
+              item.transactionDate.month == now.month &&
+              item.transactionDate.day == now.day;
         case ActivityPeriodFilter.week:
-          final difference = now.difference(item.date).inDays;
+          final difference = now.difference(item.transactionDate).inDays;
           return difference >= 0 && difference < 7;
         case ActivityPeriodFilter.month:
-          return item.date.year == _selectedMonth.year &&
-              item.date.month == _selectedMonth.month;
+          return item.transactionDate.year == _selectedMonth.year &&
+              item.transactionDate.month == _selectedMonth.month;
         case ActivityPeriodFilter.all:
           return true;
       }
@@ -423,7 +423,7 @@ class _FinanceHistoryWidgetState extends State<FinanceHistoryWidget> {
 
     final formattedAmount =
         '$sign${CurrencyFormatter.currencyFormat.format(item.amount)}';
-    final formattedTime = DateFormatter.dayHours(item.date);
+    final formattedTime = DateFormatter.dayHours(item.transactionDate);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),

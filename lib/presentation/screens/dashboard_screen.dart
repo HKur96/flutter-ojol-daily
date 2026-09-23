@@ -225,6 +225,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 // 1. Primary Financial Clarity Hero: Uang Bebas
                 Card(
+                  elevation: 1,
                   child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: Column(
@@ -371,6 +372,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 // 2. Dynamic Target Performance Section
                 Card(
+                  elevation: 1,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -467,11 +469,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 const SizedBox(height: 16),
 
-                // 3. Nearest Obligation Card
+                // 3. Weekly Income Chart Section
+                _buildSalesChartSection(
+                  context,
+                  provider,
+                  isTablet: !context.isMobile,
+                ),
+
+                const SizedBox(height: 16),
+
+                // 4. Nearest Obligation Card
                 if (state.obligationShortestDue != null) ...[
-                  const Text(
-                    "Kewajiban Terdekat",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  _buildSectionHeader(
+                    context,
+                    'Kewajiban Terdekat',
+                    isTablet: !context.isMobile,
                   ),
                   const SizedBox(height: 8),
                   _NearestObligationCard(summary: state.obligationShortestDue!),
@@ -509,6 +521,154 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
+  Widget _buildSalesChartSection(
+    BuildContext context,
+    FinancialProvider provider, {
+    bool isTablet = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildSectionHeader(
+              context,
+              'Pendapatan Minggu Ini',
+              isTablet: isTablet,
+            ),
+            Text(
+              CurrencyFormatter.format(provider.totalWeeklyIncome),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+        Card(
+          elevation: 1,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: _buildWeeklyChart(context, provider),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWeeklyChart(BuildContext context, FinancialProvider provider) {
+    final days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+    final weeklyIncomes = provider.weeklyIncomes;
+    final maxIncome = weeklyIncomes.fold<double>(
+      0.0,
+      (max, val) => val > max ? val : max,
+    );
+    final activeIndex = DateTime.now().weekday - 1;
+
+    return Container(
+      height: 150,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: List.generate(7, (index) {
+          final isToday = index == activeIndex;
+          final income = weeklyIncomes[index];
+          final heightFactor = maxIncome > 0 ? (income / maxIncome) : 0.0;
+          final barHeight = heightFactor > 0
+              ? (heightFactor * 70).clamp(6.0, 70.0)
+              : 4.0;
+
+          return Expanded(
+            child: Tooltip(
+              message:
+                  '${days[index]}: ${CurrencyFormatter.format(income.toInt())}',
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (income > 0)
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        _formatCompact(income.toInt()),
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: isToday
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: isToday
+                              ? AppColors.primary
+                              : AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 4),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        width: 20,
+                        height: barHeight,
+                        decoration: BoxDecoration(
+                          color: isToday
+                              ? AppColors.primary
+                              : (income > 0
+                                    ? AppColors.primaryContainer.withValues(
+                                        alpha: 0.7,
+                                      )
+                                    : AppColors.outline.withValues(alpha: 0.3)),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(4),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    days[index],
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
+                      color: isToday
+                          ? AppColors.primary
+                          : AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  String _formatCompact(int amount) {
+    if (amount >= 1000000) {
+      return '${(amount / 1000000).toStringAsFixed(1)}jt';
+    } else if (amount >= 1000) {
+      return '${(amount ~/ 1000)}rb';
+    }
+    return amount.toString();
+  }
+
+  Widget _buildSectionHeader(
+    BuildContext context,
+    String s, {
+    required isTablet,
+  }) {
+    return Text(
+      s,
+      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+    );
+  }
 }
 
 class _NearestObligationCard extends StatelessWidget {
@@ -525,6 +685,7 @@ class _NearestObligationCard extends StatelessWidget {
     );
 
     return Card(
+      elevation: 1,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

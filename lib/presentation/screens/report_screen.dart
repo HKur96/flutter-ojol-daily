@@ -20,7 +20,7 @@ class ActivityLogItem {
   final String title;
   final String categoryOrSubtitle;
   final int amount;
-  final DateTime date;
+  final DateTime transactionDate;
   final ActivityType type;
   final String? note;
 
@@ -29,7 +29,7 @@ class ActivityLogItem {
     required this.title,
     required this.categoryOrSubtitle,
     required this.amount,
-    required this.date,
+    required this.transactionDate,
     required this.type,
     this.note,
   });

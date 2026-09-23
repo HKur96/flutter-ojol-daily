@@ -32,4 +32,8 @@ class CurrencyFormatter {
 
   static NumberFormat get currencyFormat =>
       NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+
+  static int parse(String value) {
+    return int.tryParse(value.replaceAll('.', '').replaceAll(',', '')) ?? 0;
+  }
 }
