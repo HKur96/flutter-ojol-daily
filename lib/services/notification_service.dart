@@ -30,7 +30,7 @@ class NotificationService {
     try {
       tz.initializeTimeZones();
 
-      const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const androidInit = AndroidInitializationSettings('@drawable/ic_notification');
       const darwinInit = DarwinInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,
@@ -145,6 +145,7 @@ class NotificationService {
         channelDescription: 'Pengingat pencatatan pendapatan harian driver',
         importance: Importance.high,
         priority: Priority.high,
+        icon: '@drawable/ic_notification',
       );
       const darwinDetails = DarwinNotificationDetails();
       const details = NotificationDetails(

@@ -8,6 +8,9 @@ import '../../domain/enums.dart';
 import '../../domain/financial_calculator.dart';
 import '../../domain/financial_state.dart';
 import '../../domain/models.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import '../../services/backup_service.dart';
+import '../../services/google_drive_service.dart';
 import '../../services/notification_service.dart';
 
 class FinancialProvider extends ChangeNotifier {
@@ -127,6 +130,8 @@ class FinancialProvider extends ChangeNotifier {
 
       final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
       _todayReminderLog = await repository.getReminderLog(todayStr);
+
+      await initGoogleDrive();
 
       _recalculateState();
 
@@ -493,5 +498,89 @@ class FinancialProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('financial_setup_completed', false);
     await loadData();
+  }
+
+  // --- Backup & Restore Actions ---
+  final BackupService _backupService = BackupService();
+
+  Future<String> exportBackupJson() async {
+    return await _backupService.exportBackupJson();
+  }
+
+  Map<String, dynamic> parseAndValidateBackup(String jsonStr) {
+    return _backupService.parseAndValidateBackup(jsonStr);
+  }
+
+  Future<void> restoreBackupJson(String jsonStr) async {
+    await _backupService.restoreBackupJson(jsonStr);
+    await loadData();
+  }
+
+  Future<void> shareBackupFile() async {
+    await _backupService.shareBackupFile();
+  }
+
+  Future<String?> pickBackupFile() async {
+    return await _backupService.pickAndReadBackupFile();
+  }
+
+  // --- Google Drive Backup & Restore Actions ---
+  final GoogleDriveService _googleDriveService = GoogleDriveService();
+
+  GoogleSignInAccount? get googleUser => _googleDriveService.currentUser;
+
+  bool _isGoogleDriveLoading = false;
+  bool get isGoogleDriveLoading => _isGoogleDriveLoading;
+
+  DateTime? _lastGoogleBackupTime;
+  DateTime? get lastGoogleBackupTime => _lastGoogleBackupTime;
+
+  Future<void> initGoogleDrive() async {
+    await _googleDriveService.init();
+    _lastGoogleBackupTime = await _googleDriveService.getLastBackupTime();
+  }
+
+  Future<void> signInGoogle() async {
+    _isGoogleDriveLoading = true;
+    notifyListeners();
+    await _googleDriveService.signIn();
+    _lastGoogleBackupTime = await _googleDriveService.getLastBackupTime();
+    _isGoogleDriveLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> signOutGoogle() async {
+    _isGoogleDriveLoading = true;
+    notifyListeners();
+    await _googleDriveService.signOut();
+    _isGoogleDriveLoading = false;
+    notifyListeners();
+  }
+
+  Future<bool> backupToGoogleDrive() async {
+    _isGoogleDriveLoading = true;
+    notifyListeners();
+    try {
+      final jsonStr = await exportBackupJson();
+      final success = await _googleDriveService.uploadBackupToDrive(jsonStr);
+      if (success) {
+        _lastGoogleBackupTime = await _googleDriveService.getLastBackupTime();
+      }
+      return success;
+    } finally {
+      _isGoogleDriveLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> downloadBackupFromGoogleDrive() async {
+    _isGoogleDriveLoading = true;
+    notifyListeners();
+    try {
+      return await _googleDriveService.downloadBackupFromDrive();
+    } finally {
+      _isGoogleDriveLoading = false;
+      notifyListeners();
+    }
   }
 }
